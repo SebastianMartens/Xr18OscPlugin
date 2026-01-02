@@ -152,8 +152,4 @@ public static class Deserializer
             ? throw new Exception()
             : (char)buffer[index + 3];
     }
-
-    public static RGBA GetRGBA(ReadOnlySpan<byte> buffer, int index) => new RGBA(buffer[index], buffer[index + 1], buffer[index + 2], buffer[index + 3]);
-
-    public static Midi GetMidi(ReadOnlySpan<byte> buffer, int index) => new Midi(buffer[index], buffer[index + 1], buffer[index + 2], buffer[index + 3]);
 }

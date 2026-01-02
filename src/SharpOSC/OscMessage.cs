@@ -90,16 +90,6 @@ public class OscMessage : IOscPacket
                 bufferIndex += 4;
                 break;
 
-            case 'r':
-                arguments.Add(Deserializer.GetRGBA(buffer, bufferIndex));
-                bufferIndex += 4;
-                break;
-
-            case 'm':
-                arguments.Add(Deserializer.GetMidi(buffer, bufferIndex));
-                bufferIndex += 4;
-                break;
-
             case 'T':
                 arguments.Add(true);
                 break;
@@ -237,14 +227,6 @@ public class OscMessage : IOscPacket
             case char v:
                 types.Append('c');
                 Serializer.SetChar(v, buffer);
-                break;
-            case RGBA v:
-                types.Append('r');
-                Serializer.SetRGBA(v, buffer);
-                break;
-            case Midi v:
-                types.Append('m');
-                Serializer.SetMidi(v, buffer);
                 break;
             case bool v:
                 types.Append(v ? "T" : "F");
