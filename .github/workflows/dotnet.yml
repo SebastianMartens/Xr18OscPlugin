@@ -23,6 +23,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      # Skip PostBuild target to avoid creating .link files on build agents
+      run: dotnet build --no-restore /p:RunPostBuild=false
     - name: Test
       run: dotnet test --no-build --verbosity normal
