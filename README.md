@@ -7,7 +7,7 @@ The controller then can be used to remote control the Behringer XR12/16/18 produ
 Status
 ----------------------
 This plugin is an early project in "experimental" stage (as of Jan 2026).
-I used .Net 8 to send and receive OSC (Open Sound Control) messages via UDP to/from the Behringer digital mixer.
+I used .Net 9 to send and receive OSC (Open Sound Control) messages via UDP to/from the Behringer digital mixer.
 
 The most useful feature is a dial adjustment that can be used to control the fader level and mute of the 18 input channels, the main channel and FX return channels.
 This was already battle-tested and turned out to be useful for Karaoke-Sessions with the mixer or band rehearsals.
