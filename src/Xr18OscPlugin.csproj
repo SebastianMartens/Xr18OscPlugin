@@ -26,8 +26,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="PluginApi">
+    <!-- <Reference Include="PluginApi">
       <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
+    </Reference> -->
+
+      <!-- Prefer local /lib/PluginApi.dll so that build agents can work independently of local installation -->
+    <Reference Include="PluginApi">
+      <HintPath>..\lib\PluginApi.dll</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
 
