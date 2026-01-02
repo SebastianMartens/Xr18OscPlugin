@@ -1,0 +1,93 @@
+﻿namespace SharpOSC;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
+
+public class OscBundle : IOscPacket
+{
+    readonly Timetag Timetag;
+    public readonly ImmutableArray<OscMessage> Messages;
+    public DateTime Timestamp => Timetag.Timestamp;
+
+    public OscBundle(ulong timetag, params ImmutableArray<OscMessage> args)
+    {
+        Timetag = new(timetag);
+        Messages = args;
+    }
+
+    public byte[] Serialize()
+    {
+        var bundle = "#bundle";
+        var bundleTagLen = Utils.AlignedStringLength(bundle);
+        var tag = new List<byte>();
+        Serializer.SetULong(Timetag.Tag, tag);
+
+        var outMessages = new byte[Messages.Length][];
+        for (var i = 0; i < Messages.Length; i++)
+        {
+            OscMessage msg = Messages[i];
+            outMessages[i] = msg.Serialize();
+        }
+
+        var len = bundleTagLen + tag.Count + outMessages.Sum(x => x.Length + 4);
+
+        var length = 0;
+        var output = new byte[len];
+        Encoding.ASCII.GetBytes(bundle).CopyTo(output, length);
+        length += bundleTagLen;
+        tag.CopyTo(output, length);
+        length += tag.Count;
+
+        for (var i = 0; i < outMessages.Length; i++)
+        {
+            var size = new List<byte>();
+            Serializer.SetInt(outMessages[i].Length, size);
+            size.CopyTo(output, length);
+            length += size.Count;
+
+            outMessages[i].CopyTo(output, length);
+            length += outMessages[i].Length; // msg size is always a multiple of 4
+        }
+
+        return output;
+    }
+
+    /// <summary>
+    /// Takes in an OSC bundle package in byte form and parses it into a more usable OscBundle object
+    /// </summary>
+    /// <returns>
+    /// Bundle containing elements and a timetag
+    /// </returns>
+    public static OscBundle Deserialize(ReadOnlySpan<byte> buffer)
+    {
+        var bundleTag = Encoding.ASCII.GetString(buffer[..8]);
+        if (bundleTag != "#bundle\0") throw new Exception("Not a bundle");
+
+        ulong timetag;
+        List<OscMessage> messages = new();
+
+        var index = 8;
+
+        timetag = Deserializer.GetULong(buffer, index);
+        index += 8;
+
+        while (index < buffer.Length)
+        {
+            var size = Deserializer.GetInt(buffer, index);
+            index += 4;
+
+            ReadOnlySpan<byte> messageBytes = buffer.Slice(index, size);
+            var message = OscMessage.Deserialize(messageBytes);
+
+            messages.Add(message);
+
+            index += size;
+            while (index % 4 != 0) index++;
+        }
+
+        return new OscBundle(timetag, messages.ToImmutableArray());
+    }
+}
