@@ -23,7 +23,11 @@ public class Xr18OscPlugin : Plugin
         PluginResources.Init(Assembly);
     }
 
-    public override void Load() {}
+    public override void Load() => base.Load();
 
-    public override void Unload() => Mixer.Close();
+    public override void Unload()
+    {
+        Mixer.Close();
+        base.Unload();
+    }
 }

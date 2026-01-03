@@ -20,7 +20,22 @@
       "type": "shell",
       "command": "logiplugintool pack ./bin/Release ./Xr18Osc.lplug4",
       "group": "none",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+          "Build (Release)"
+      ],
+    },
+    {
+      "label": "Verify Plugin (incl. packaging)",
+      "type": "shell",
+      "command": "logiplugintool verify ./Xr18Osc.lplug4",
+      "group": "none",
+      "problemMatcher": [],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+          "Package Plugin"
+      ],
     },
     {
       "label": "Install Plugin",

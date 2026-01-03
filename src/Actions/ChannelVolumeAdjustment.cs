@@ -16,7 +16,11 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         // create one adjustment per channel (18 channels + main mix + 4 Fx return channels)
         foreach (var channel in Xr18OscPlugin.Mixer.MixerChannels.Channels)
         {
-            AddParameter(channel.Key, $"{channel.Key} Vol", "Channel Adjustments");                                 
+            AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
+            if (TryGetParameter(channel.Key, out var param))
+            {
+                param.ResetDisplayName = $"Mute Channel {channel.Key}";
+            }
         }
                 
         // Subscribe to channel changes to update displayed adjustment values on the dials:
@@ -78,7 +82,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         //switch (currentMixBus)
         //{
             //case "lr":
-                return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTED";
+                return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";
             //default:
                 //return channel.BusSendLevels[int.Parse(currentMixBus.Replace("aux", ""))].ToString("#.00");
         //}

@@ -4,6 +4,9 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+
+using Loupedeck.Xr18OscPlugin;
+
 using SharpOSC;
 
 /// <summary>
@@ -29,6 +32,7 @@ public class Mixer
 
     public Mixer()
     {
+        PluginLog.Info("Initializing Mixer domain object...");
         MixerChannels = new MixerChannels(this);
         
         // Impl. of buses is pending
