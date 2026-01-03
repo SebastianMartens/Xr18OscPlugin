@@ -10,7 +10,7 @@ internal class ConnectCommand: ActionEditorCommand
     public ConnectCommand()
     {
         Name = "Connection Settings";
-        DisplayName = "Please enter Ip Address of Mixer";
+        DisplayName = "Manually enter Ip Address of Mixer";
         Description = "You only need this action if you want to set the IP manually and skip auto discovery.";
         GroupName = "Initialization";
 
