@@ -1,7 +1,7 @@
 namespace Loupedeck.Xr18OscPlugin;
 
 /// <summary>
-/// This action command can be used to send any integer value to the mixer via OSC.
+/// This action command can be used to send any float value to the mixer via OSC.
 /// Loupedeck itself supports things like toggles or grouping multiple commands together so this
 /// command is quite powerful if you know what OSC messages to send.
 /// 
