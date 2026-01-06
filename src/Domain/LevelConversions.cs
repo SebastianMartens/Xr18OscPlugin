@@ -23,7 +23,7 @@ internal static class LevelConversions
 
         return scaled / 600.0;
 
-        // The code above is adapted from John Skeet's original implementation fo XR18.
+        // The code above is adapted from John Skeet's original implementation for XR18.
         // The code below is for X32.
         // TODO: both are not in use right now and need to be verified.
 
