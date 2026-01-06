@@ -1,5 +1,7 @@
 namespace Xr18OscPlugin.Domain;
 
+using Loupedeck.Xr18OscPlugin.Domain;
+
 /// <summary>
 /// We group all mixer channels here to ease initialization.
 /// </summary>
@@ -36,7 +38,7 @@ public class MixerChannels
                 meterIndex: channelIndex - 1,
                 meterIndex2: stereo ? channelIndex : default(int?),
                 $"/ch/{channelIndex:00}/mix/on")
-            );                    
+            );
         }
 
         // Main mix channel

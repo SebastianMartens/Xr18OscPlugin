@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
+using Loupedeck;
 using Loupedeck.Xr18OscPlugin;
 
 using SharpOSC;
@@ -93,14 +94,21 @@ public class Mixer
         UdpOscConnection?.Dispose();
         UdpOscConnection = new UdpOscConnection(OscRemoteIpAddress, OscRemotePort);
 
-        // Setup keep alive ping to mixer
-        // Do this in the background each 7 seconds.
-        timer = new Timer(SendKeepAlivePing, null, 0, 7000);
-        void SendKeepAlivePing(object? state) => UdpOscConnection.Send(new OscMessage("/xremote"));
+        try
+        {
+            // Setup keep alive ping to mixer
+            // Do this in the background each 7 seconds.
+            timer = new Timer(SendKeepAlivePing, null, 0, 7000);
+            void SendKeepAlivePing(object? state) => UdpOscConnection.Send(new OscMessage("/xremote"));
 
-        // Setup listener to receive messages from mixer        
-        UdpOscConnection.MessageReceived += HandlePacketReceived;
-        UdpOscConnection.StartReceiving();
+            // Setup listener to receive messages from mixer        
+            UdpOscConnection.MessageReceived += HandlePacketReceived;
+            UdpOscConnection.StartReceiving();
+        }
+        catch (Exception e)
+        {
+            PluginLog.Error($"Failed to connect to mixer at {OscRemoteIpAddress}:{OscRemotePort} - {e.Message}");
+        }
     }
 
     private async Task<bool> DiscoverMixer()
@@ -121,13 +129,13 @@ public class Mixer
             Name = responseMessage.Arguments[1] as string ?? "Unknown Mixer";
             Model = responseMessage.Arguments[2] as string ?? "Unknown Model";
             FirmwareVersion = responseMessage.Arguments[3] as string ?? "Unknown Version";
-            Console.WriteLine($"Successfully discovered mixer '{Name}' at {remoteIp} (Model:{Model}, FW: {FirmwareVersion})");
+            PluginLog.Info($"Successfully discovered mixer '{Name}' at {remoteIp} (Model:{Model}, FW: {FirmwareVersion})");
 
             OscRemoteIpAddress = remoteIp;
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Mixer discovery failed: {e.Message}");            
+            PluginLog.Error($"Mixer discovery failed: {e.Message}");            
             return false;
         }        
 
@@ -146,10 +154,17 @@ public class Mixer
         if (UdpOscConnection == null) 
             await ReconnectOsc().ConfigureAwait(false);
 
-        if (value == null)
-            UdpOscConnection?.Send(new OscMessage(address));
-        else
-            UdpOscConnection?.Send(new OscMessage(address, value));
+        try
+        {
+            if (value == null)
+                UdpOscConnection?.Send(new OscMessage(address));
+            else
+                UdpOscConnection?.Send(new OscMessage(address, value));
+        }
+        catch (Exception e)
+        {
+            PluginLog.Error($"Failed to send OSC message to mixer at {OscRemoteIpAddress}:{OscRemotePort} - {e.Message}");
+        }
     }
 
     private readonly ConcurrentDictionary<string, EventHandler<OscMessage>> _messageHandlers = new();
