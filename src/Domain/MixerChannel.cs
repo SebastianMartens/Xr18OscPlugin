@@ -1,4 +1,4 @@
-namespace Xr18OscPlugin.Domain;
+namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using SharpOSC;
 
@@ -17,22 +17,20 @@ public class MixerChannel
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="mixer"></param>
-    /// <param name="channelNumber">Channel number, e.g. "01"-"18".</param>
     public MixerChannel(
             Mixer mixer, string nameAddress, string faderLevelAddress,
             string outputMeterAddress, int meterIndex, int? meterIndex2, string onAddress)
     {
         _mixer = mixer;
+
         _nameAddress = nameAddress;
+        _onAddress = onAddress;
         _faderLevelAddress = faderLevelAddress;
+
         _outputMeterAddress = outputMeterAddress;
         _meterIndex = meterIndex;
         _meterIndex2 = meterIndex2;
-        _onAddress = onAddress;
+        
 
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
@@ -52,16 +50,17 @@ public class MixerChannel
     /// </summary>
     public bool IsOn { get; set; } = true;
     
-    public float FaderLevel = 0.0f; // TODO: init from mixer
+    public float FaderLevel = 0.0f;
 
     #region setters to send data/commands to mixer
-
-    public Task SetFaderLevel(float level) => _mixer.Send(_faderLevelAddress, level);
 
     public Task SetIsOn(bool isOn) => _mixer.Send(_onAddress, isOn ? 1 : 0);
 
     public Task ToggleOnOff() => SetIsOn(!IsOn);
-    
+
+    public Task SetFaderLevel(float level) => _mixer.Send(_faderLevelAddress, level);
+
+   
     #endregion
 
     #region events to communicate changes to consumers (plugin actions etc.)

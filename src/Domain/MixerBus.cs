@@ -1,4 +1,4 @@
-// namespace Xr18OscPlugin.Domain;
+// namespace Loupedeck.Xr18OscPlugin.Domain;
 
 // public class MixerBus
 // {
