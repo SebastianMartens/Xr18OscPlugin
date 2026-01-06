@@ -1,4 +1,4 @@
-namespace Loupedeck.Xr18OscPlugin;
+namespace Loupedeck.Xr18OscPlugin.Actions;
 
 /// <summary>
 /// This action command can be used to send any integer value to the mixer via OSC.

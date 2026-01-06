@@ -1,11 +1,10 @@
-namespace Xr18OscPlugin.Domain;
+namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using Loupedeck;
 using Loupedeck.Xr18OscPlugin;
 
 using SharpOSC;

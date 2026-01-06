@@ -1,6 +1,6 @@
 // #nullable disable
 
-// namespace Loupedeck.Xr18OscPlugin;
+// namespace Loupedeck.Xr18OscPlugin.Actions;
 
 // using System.Collections.Generic;
 

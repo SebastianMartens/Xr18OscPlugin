@@ -1,4 +1,4 @@
-namespace Xr18OscPlugin.Domain;
+namespace Loupedeck.Xr18OscPlugin.Domain;
 
 /// <summary>
 /// We group all mixer channels here to ease initialization.

@@ -1,6 +1,6 @@
 namespace Loupedeck.Xr18OscPlugin;
 
-using global::Xr18OscPlugin.Domain;
+using Loupedeck.Xr18OscPlugin.Domain;
 
 public class Xr18OscPlugin : Plugin
 {

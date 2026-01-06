@@ -1,4 +1,4 @@
-namespace Loupedeck.Xr18OscPlugin;
+namespace Loupedeck.Xr18OscPlugin.Actions;
 
 /// This action command can be used to send any floating-point value to the mixer via OSC.
 /// Loupedeck itself supports things like toggles or grouping multiple commands together so this

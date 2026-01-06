@@ -1,4 +1,4 @@
-namespace Loupedeck.Xr18OscPlugin;
+namespace Loupedeck.Xr18OscPlugin.Actions;
 
 public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 {   
