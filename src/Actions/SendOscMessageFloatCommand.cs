@@ -9,23 +9,23 @@ namespace Loupedeck.Xr18OscPlugin;
 ///           Address: /ch/02/eq/on Value: 1 => Switch on the EQ on channel 2
 ///           Address: /headamp/01/phantom Value: 1 => Enable phantom power on preamp of channel 1
 /// </summary>
-public class SendOscMessageIntCommand : ActionEditorCommand
+public class SendOscMessageFloatCommand : ActionEditorCommand
 {
-    public SendOscMessageIntCommand()
+    public SendOscMessageFloatCommand()
     {
-        Name = "Send OSC Command (int/bool)";
-        DisplayName = "Send OSC command with int parameter to mixer";
+        Name = "Send OSC Command (float)";
+        DisplayName = "Send OSC command with float parameter to mixer";
         GroupName = "Commands";
 
         ActionEditor.AddControlEx(
             new ActionEditorTextbox("Address", "OSC Address", "The OSC address to send a value to.")
-            .SetPlaceholder("/ch/01/dyn/on")
+            .SetPlaceholder("/ch/01/mix/pan")
             .SetRequired()
         );
 
         ActionEditor.AddControlEx(
-            new ActionEditorTextbox("Value", "Value", "The OSC value to send. Must be an integer number")
-            .SetPlaceholder("0")
+            new ActionEditorTextbox("Value", "Value", "The OSC value to send. Must be a floating point number.")
+            .SetPlaceholder("0.25")
             .SetRequired()
         );
     }
@@ -33,12 +33,14 @@ public class SendOscMessageIntCommand : ActionEditorCommand
     protected override bool RunCommand(ActionEditorActionParameters actionParameter)
     {
         var address = actionParameter.GetString("Address");
-        if (!actionParameter.TryGetInt32("Value", out var value))
+        if (!actionParameter.TryGetString("Value", out var value))
             return false;
             
-        Xr18OscPlugin.Mixer.Send(address, value).Wait();
+        if (!float.TryParse(value, out var floatValue))
+            return false;
+            
+        Xr18OscPlugin.Mixer.Send(address, floatValue).Wait();
         ActionImageChanged();
         return true;
     }
-
 }
