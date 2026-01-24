@@ -1,22 +1,18 @@
 namespace Loupedeck.Xr18OscPlugin.Actions;
 
+/// <summary>
+/// Control main mix volume of individual channels on the mixer.
+/// </summary>
 public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 {   
-    /// <summary>
-    /// The curent Mix Bus defines which volume levels are adjusted.
-    /// E.g. if the dials should adjust the main mix or the channel volume send to a specific aux bus.
-    /// Bus "lr" is the main mix.
-    /// Bus "aux1"-"aux6" are the aux buses.
-    /// Bus "fx1"-"fx4" are the FX return channels.
-    /// </summary>
-    //public static string currentMixBus = "lr"; // default to main mix
-
     public ChannelVolumeAdjustment(): base(true)
     {   
         // create one adjustment per channel (18 channels + main mix + 4 Fx return channels)
         foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
         {
+            // "AddParameter" is a badly named "Please create an adjustment item in the Loupedeck software for me".
             AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
+            
             if (TryGetParameter(channel.Key, out var param))
             {
                 param.ResetDisplayName = $"Mute Channel {channel.Key}";
@@ -34,10 +30,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
-        var channel = Xr18OscPlugin.Mixer.Channels.All[actionParameter];
-        
-        // TODO: currently we only set level of bus "lr" (main mix)
-        // => introduce cocept of "current bus" (a dial should control a specific bus which is selectable)
+        var channel = Xr18OscPlugin.Mixer.Channels.All[actionParameter];        
         var newMainMixFaderLevel = channel.FaderLevel;
         
         switch (Math.Abs(diff))
@@ -79,13 +72,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         if (!Xr18OscPlugin.Mixer.Channels.All.TryGetValue(actionParameter, out var channel))
             return "";
 
-        //switch (currentMixBus)
-        //{
-            //case "lr":
-                return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";
-            //default:
-                //return channel.BusSendLevels[int.Parse(currentMixBus.Replace("aux", ""))].ToString("#.00");
-        //}
+        return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";        
     }
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)

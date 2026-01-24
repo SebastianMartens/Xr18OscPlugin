@@ -28,6 +28,12 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         DisplayName = "IEM Mix";
         GroupName = "Custom Mixes (IEM, Monitors, etc.)";
         Description = "Dynamic Folder for testing";
+
+        // Subscribe to bus changes
+        foreach (var bus in Xr18OscPlugin.Mixer.Busses.All.Values)
+        {
+            bus.NameChanged += (s, e) => ButtonActionNamesChanged();
+        } 
     }
 
     public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)

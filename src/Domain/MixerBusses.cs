@@ -23,20 +23,24 @@ public class MixerBusses
 
     private void InitBuses()
     {
-        All.Add("Main Mix", new MixerBus(_mixer, "/lr/config/name") { BusNumber = 0 });
+        All.Add("Main Mix", new MixerBus(_mixer, "/lr/config/name", 0));
 
-        All.Add("Bus 1", new MixerBus(_mixer, "/bus/1/config/name") { BusNumber = 1 });
-        All.Add("Bus 2", new MixerBus(_mixer, "/bus/2/config/name") { BusNumber = 2 });
-        All.Add("Bus 3", new MixerBus(_mixer, "/bus/3/config/name") { BusNumber = 3 });
-        All.Add("Bus 4", new MixerBus(_mixer, "/bus/4/config/name") { BusNumber = 4 });
-        All.Add("Bus 5", new MixerBus(_mixer, "/bus/5/config/name") { BusNumber = 5 });
-        All.Add("Bus 6", new MixerBus(_mixer, "/bus/6/config/name") { BusNumber = 6 });
-        
+        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        {
+            All.Add($"Bus {busIndex}", new MixerBus(
+                _mixer, 
+                $"/bus/{busIndex}/config/name",
+                busIndex));
+        }
+                
         // TODO: rethink concept of BusNumber for Fx => better to use separate classes similar to OSC APi (https://behringer.world/wiki/doku.php?id=x-air_osc)?!
-        All.Add("FX 1 Sends", new MixerBus(_mixer, "/fxsend/1/config/name") { BusNumber = 101 });
-        All.Add("FX 2 Sends", new MixerBus(_mixer, "/fxsend/2/config/name") { BusNumber = 102 });
-        All.Add("FX 3 Sends", new MixerBus(_mixer, "/fxsend/3/config/name") { BusNumber = 103 });
-        All.Add("FX 4 Sends", new MixerBus(_mixer, "/fxsend/4/config/name") { BusNumber = 104 });
+        for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
+        {
+            All.Add($"FX Send {fxIndex}", new MixerBus(
+                _mixer, 
+                $"/fxsend/{fxIndex}/config/name",
+                100 + fxIndex));
+        }
     }
 
 }

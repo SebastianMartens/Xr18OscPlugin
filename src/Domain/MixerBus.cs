@@ -10,11 +10,12 @@ public class MixerBus
     private Mixer _mixer { get; }
 
     private readonly string _nameAddress;
-
-    public MixerBus(Mixer mixer, string nameAddress)
+    
+    public MixerBus(Mixer mixer, string nameAddress, int busNumber)
     {
         _mixer = mixer;
         _nameAddress = nameAddress;
+        BusNumber = busNumber;
 
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
@@ -26,7 +27,7 @@ public class MixerBus
     /// <summary>
     /// XR18 has six mix-buses numbered 1-6.
     /// </summary>
-    public int BusNumber { get; set; }
+    public int BusNumber { get; }
     
     public string Name { get; private set; } = "Unknown Bus";
 
