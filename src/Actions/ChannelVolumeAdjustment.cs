@@ -12,7 +12,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             // "AddParameter" is a badly named "Please create an adjustment item in the Loupedeck software for me".
             AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
-            
+
             if (TryGetParameter(channel.Key, out var param))
             {
                 param.ResetDisplayName = $"Mute Channel {channel.Key}";
@@ -20,7 +20,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         }
                 
         // Subscribe to channel changes to update displayed adjustment values on the dials:
-        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All.Values)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
         {
             channel.NameChanged += (s, e) => AdjustmentValueChanged();
             channel.IsOnChanged += (s, e) => AdjustmentValueChanged();
@@ -30,7 +30,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
-        var channel = Xr18OscPlugin.Mixer.Channels.All[actionParameter];        
+        var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
         var newMainMixFaderLevel = channel.FaderLevel;
         
         switch (Math.Abs(diff))
@@ -64,22 +64,19 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     /// </summary>
     /// <param name="actionParameter"></param>
     protected override void RunCommand(string actionParameter) =>        
-        Xr18OscPlugin.Mixer.Channels.All[actionParameter].ToggleOnOff();
+        Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).ToggleOnOff();
 
     // Returns the adjustment value that is shown next to the dial.
     protected override string GetAdjustmentValue(string actionParameter)
     {
-        if (!Xr18OscPlugin.Mixer.Channels.All.TryGetValue(actionParameter, out var channel))
-            return "";
-
-        return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";        
+        var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
+        return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";
     }
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
     {
-        return !Xr18OscPlugin.Mixer.Channels.All.TryGetValue(actionParameter, out var channel)
-            ? ""
-            : channel.Name ?? actionParameter;
+        var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
+        return channel.Name;
     }
 
 }

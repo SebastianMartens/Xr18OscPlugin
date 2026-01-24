@@ -9,6 +9,8 @@ public class MixerChannel
 {
     private readonly Mixer _mixer;
 
+    private readonly string _index; // formatted index of the channel (e.g. "01", "02", .. "16")
+
     // address patterns for OSC communication
     private readonly string _nameAddress;
     private readonly string _faderLevelAddress;
@@ -17,12 +19,13 @@ public class MixerChannel
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
+
     public MixerChannel(
-            Mixer mixer, string nameAddress, string faderLevelAddress,
+            Mixer mixer, string index, string nameAddress, string faderLevelAddress,
             string outputMeterAddress, int meterIndex, int? meterIndex2, string onAddress)
     {
         _mixer = mixer;
-
+        _index = index;
         _nameAddress = nameAddress;
         _onAddress = onAddress;
         _faderLevelAddress = faderLevelAddress;
@@ -36,13 +39,15 @@ public class MixerChannel
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
         _mixer.RegisterHandler(_onAddress, OnIsOnChanged);
         _mixer.RegisterHandler(_faderLevelAddress, OnFaderLevelChanged);
-
+        
         // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
         _mixer.Send(_nameAddress).Wait();
         _mixer.Send(_onAddress).Wait();
         _mixer.Send(_faderLevelAddress).Wait();
     }    
 
+    public string Key => $"Ch{_index}";
+    
     public string Name { get; private set; } = "Unknown Channel";
 
     /// <summary>
@@ -51,6 +56,7 @@ public class MixerChannel
     public bool IsOn { get; set; } = true;
     
     public float FaderLevel = 0.0f;
+
 
     #region setters to send data/commands to mixer
 
@@ -114,25 +120,16 @@ public class MixerChannel
 
     #endregion
     
-    #region Bus Fader Level - w.i.p.
+    #region Mix Bus Fader Levels
 
     /// <summary>
     /// Channel mixbus sends level
-    /// Key: 1-6 (Aux Bus number)
-    /// Value: Level (0.0 - 1.0)
     /// </summary>
-    // public Dictionary<int, float> BusSendLevels { get; } = new Dictionary<int, float>()
-    // {
-    //     // TODO: Initialize all bus sends with values from mixer        
-    //     { 1, 0.0f },
-    //     { 2, 0.0f },
-    //     { 3, 0.0f },
-    //     { 4, 0.0f },
-    //     { 5, 0.0f },
-    //     { 6, 0.0f }
-    // };
-    
-    //public void SetBusSendLevel(int busNumber, float level) => _mixer.Send($"/ch/{ChannelNumber}/mix/{busNumber}/level", level).Wait();
+    /// <param name="mixBus"></param>
+    /// <returns></returns>
+    public float MixSendLevel(int auxBusIndex) => 42f;
+
+    public void SetAuxBusSendLevel(int auxBusNumber, float level) => _mixer.Send($"/ch/{_index}/mix/{auxBusNumber}/level", level).Wait();
 
     //internal void OnFaderChanged(OscMessage msg) => FaderLevel = msg.TryGetFieldValue<double>("");
 

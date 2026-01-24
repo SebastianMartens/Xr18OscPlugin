@@ -13,7 +13,7 @@ public class MixerBusses
     /// <summary>
     /// Key: Name of the Bus how it's identified in the mixer (e.g. "Bus 1"). Does NOT change when user renames the bus in the mixer UI.
     /// </summary>
-    public readonly Dictionary<string, MixerBus> All = [];
+    public readonly List<AuxBus> All = [];
     
     public MixerBusses(Mixer mixer)
     {
@@ -23,24 +23,22 @@ public class MixerBusses
 
     private void InitBuses()
     {
-        All.Add("Main Mix", new MixerBus(_mixer, "/lr/config/name", 0));
+        // TODO: need common interface to group different kind of busses?
+        //All.Add("Main Mix", new MainLrBus(_mixer));
 
         for (var busIndex = 1; busIndex <= 6; busIndex++)
         {
-            All.Add($"Bus {busIndex}", new MixerBus(
-                _mixer, 
-                $"/bus/{busIndex}/config/name",
-                busIndex));
+            All.Add(new AuxBus(_mixer, busIndex));
         }
                 
         // TODO: rethink concept of BusNumber for Fx => better to use separate classes similar to OSC APi (https://behringer.world/wiki/doku.php?id=x-air_osc)?!
-        for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
-        {
-            All.Add($"FX Send {fxIndex}", new MixerBus(
-                _mixer, 
-                $"/fxsend/{fxIndex}/config/name",
-                100 + fxIndex));
-        }
+        // for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
+        // {
+        //     All.Add($"FX Send {fxIndex}", new FxBus(
+        //         _mixer, 
+        //         $"/fxsend/{fxIndex}/config/name",
+        //         100 + fxIndex));
+        // }
     }
 
 }

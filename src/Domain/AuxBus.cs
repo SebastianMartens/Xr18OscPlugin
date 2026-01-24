@@ -2,7 +2,10 @@ namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using SharpOSC;
 
-public class MixerBus
+/// <summary>
+/// Represents a single auxiliary bus (monitor bus 1..6) on the mixer.
+/// </summary>
+public class AuxBus
 {
     /// <summary>
     /// The parent mixer of this bus.
@@ -11,11 +14,19 @@ public class MixerBus
 
     private readonly string _nameAddress;
     
-    public MixerBus(Mixer mixer, string nameAddress, int busNumber)
+    /// <summary>
+    /// The key to identify this bus (e.g. "Aux1", "Aux2", .. "Aux6").
+    /// We can't use the user defined Name property here because that is not necessarily unique.
+    /// Also using only the index as key is not nice as we use the key in context with other indexed items (e.g. "Fx1", "Fx2", ..).
+    /// </summary>
+    public string Key => $"Aux{Index}";
+
+    public AuxBus(Mixer mixer, int index)
     {
         _mixer = mixer;
-        _nameAddress = nameAddress;
-        BusNumber = busNumber;
+        Index = index;
+        _nameAddress = $"/bus/{index}/config/name";
+        
 
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
@@ -27,27 +38,18 @@ public class MixerBus
     /// <summary>
     /// XR18 has six mix-buses numbered 1-6.
     /// </summary>
-    public int BusNumber { get; }
+    public int Index { get; }
     
+    /// <summary>
+    /// Name of the bus as configured in the mixer UI (can be changed by user).
+    /// </summary>
     public string Name { get; private set; } = "Unknown Bus";
-
-    //public float FaderLevel { get; set; }
-    //public bool IsMuted { get; set; }
-
-    public double Pan { 
-        get; 
-        set 
-        { 
-            field = value; 
-            _mixer.Send($"/bus/{BusNumber}/mix/pan", value).Wait();
-        }
-    }
 
     private void OnNameChanged(object? sender, OscMessage e)
     {
         if (e.Arguments[0] is string name) 
         {
-            Name = string.IsNullOrEmpty(name) ? $"Bus {BusNumber}" : name;
+            Name = string.IsNullOrEmpty(name) ? $"Bus {Index}" : name;
             NameChanged?.Invoke(this, name);
         }
     }
