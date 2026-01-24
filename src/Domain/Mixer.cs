@@ -4,10 +4,10 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-
+using global::Xr18OscPlugin.Domain;
 using Loupedeck.Xr18OscPlugin;
-
 using SharpOSC;
+
 
 /// <summary>
 /// Represents a Behringer XR18 digital mixer.
@@ -28,33 +28,22 @@ public class Mixer
 
     public string FirmwareVersion { get; private set; } = "Unknown Version";
 
-    public MixerChannels MixerChannels { get; }
+    /// <summary>
+    /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips incl. main mix and fx returns.
+    /// </summary>
+    public MixerChannels Channels { get; }
+
+    /// <summary>
+    /// Busses are used for submixes like monitors or IEMs.
+    /// </summary>
+    public MixerBusses Busses { get; }
 
     public Mixer()
     {
         PluginLog.Info("Initializing Mixer domain object...");
-        MixerChannels = new MixerChannels(this);
-        
-        // Impl. of buses is pending
-        //InitBuses();
+        Channels = new MixerChannels(this);
+        Busses = new MixerBusses(this);
     }
-
-    // /// <summary>
-    // /// Busses are used for submixes like monitors or IEMs.
-    // /// </summary>
-    // public List<MixerBus> Buses { get; set; } = [];
-
-    // private void InitBuses()
-    // {
-    //     Buses = [
-    //         new(this) { BusNumber = 1 },
-    //         new(this) { BusNumber = 2 },
-    //         new(this) { BusNumber = 3 },
-    //         new(this) { BusNumber = 4 },
-    //         new(this) { BusNumber = 5 },
-    //         new(this) { BusNumber = 6 }
-    //     ];
-    // }
     
 
     #region connection Plugin <=> Mixer

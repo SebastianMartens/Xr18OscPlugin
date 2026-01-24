@@ -9,22 +9,6 @@ using System.Collections.Generic;
 /// </summary>
 public class Xr18DynamicFolder : PluginDynamicFolder
 {     
-    
-    // list of available mix busses, used to show selection of busses
-    private readonly List<string> availableMixBusses =
-    [
-        "Main Mix",
-        "Bus 1",
-        "Bus 2",
-        "Bus 3",
-        "Bus 4",
-        "Bus 5",
-        "Bus 6",
-        "FX 1 Sends",
-        "FX 2 Sends",
-        "FX 3 Sends",
-        "FX 4 Sends",
-    ];
 
     private readonly List<string> availableChannelRanges =
     [
@@ -52,9 +36,9 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // Initially, we show the list of available mix busses.       
         if (string.IsNullOrEmpty(currentMixBus))
         {
-            foreach (var bus in availableMixBusses)
+            foreach (var bus in Xr18OscPlugin.Mixer.Busses.All.Values)
             {
-                yield return CreateCommandName(bus);
+                yield return CreateCommandName(bus.Name);
             }
             yield break;
         }
@@ -121,7 +105,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             EncoderActionNamesChanged();
         }
         else
-        if (availableMixBusses.Contains(actionParameter))
+        if (Xr18OscPlugin.Mixer.Busses.All.Values.Select(x => x.Name).Contains(actionParameter))
         {
             // user selected a mix bus
             currentMixBus = actionParameter;

@@ -1,30 +1,59 @@
-// namespace Loupedeck.Xr18OscPlugin.Domain;
+namespace Loupedeck.Xr18OscPlugin.Domain;
 
-// public class MixerBus
-// {
-//     /// <summary>
-//     /// The parent mixer of this bus.
-//     /// </summary>
-//     private Mixer Mixer { get; }
+using SharpOSC;
 
-//     public MixerBus(Mixer mixer) => Mixer = mixer; // TODO: init state from mixer state            
+public class MixerBus
+{
+    /// <summary>
+    /// The parent mixer of this bus.
+    /// </summary>
+    private Mixer _mixer { get; }
 
-//     /// <summary>
-//     /// XR18 has six mix-buses numbered 1-6.
-//     /// </summary>
-//     public int BusNumber { get; set; }
+    private readonly string _nameAddress;
+
+    public MixerBus(Mixer mixer, string nameAddress)
+    {
+        _mixer = mixer;
+        _nameAddress = nameAddress;
+
+        // Subscribe handlers to receive updates from mixer:
+        _mixer.RegisterHandler(_nameAddress, OnNameChanged);
+
+        // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
+        _mixer.Send(_nameAddress).Wait();
+    }
+
+    /// <summary>
+    /// XR18 has six mix-buses numbered 1-6.
+    /// </summary>
+    public int BusNumber { get; set; }
     
-//     //public float FaderLevel { get; set; }
+    public string Name { get; private set; } = "Unknown Bus";
 
-//     //public bool IsMuted { get; set; }
+    //public float FaderLevel { get; set; }
+    //public bool IsMuted { get; set; }
 
-//     public double Pan { 
-//         get; 
-//         set 
-//         { 
-//             field = value; 
-//             Mixer.Send($"/bus/{BusNumber}/mix/pan", value).Wait();
-//         }
-//     }
+    public double Pan { 
+        get; 
+        set 
+        { 
+            field = value; 
+            _mixer.Send($"/bus/{BusNumber}/mix/pan", value).Wait();
+        }
+    }
 
-// }
+    private void OnNameChanged(object? sender, OscMessage e)
+    {
+        if (e.Arguments[0] is string name) 
+        {
+            Name = string.IsNullOrEmpty(name) ? $"Bus {BusNumber}" : name;
+            NameChanged?.Invoke(this, name);
+        }
+    }
+
+    #region events to communicate changes to consumers (plugin actions etc.)
+
+    public event EventHandler<string>? NameChanged;
+    
+    #endregion
+}

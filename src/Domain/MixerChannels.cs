@@ -10,7 +10,7 @@ public class MixerChannels
     /// <summary>
     /// Gets or sets the list of channels on the mixer.
     /// </summary>
-    public Dictionary<string, MixerChannel> Channels { get; set; } = [];
+    public Dictionary<string, MixerChannel> All { get; set; } = [];
 
     public MixerChannels(Mixer mixer)
     {
@@ -20,7 +20,7 @@ public class MixerChannels
 
     private void InitChannels() 
     {
-        Channels = [];       
+        All = [];       
         var stereo = false; // TODO: stereo config from mixer settings not yet implemented
 
         // Create regular channels 1-16
@@ -28,7 +28,7 @@ public class MixerChannels
         // configured as regular channels as well (currently not yet supported here)
         for (var channelIndex = 1; channelIndex <= 16; channelIndex++)
         {
-            Channels.Add($"{channelIndex:00}", new MixerChannel(
+            All.Add($"{channelIndex:00}", new MixerChannel(
                 _mixer,
                 $"/ch/{channelIndex:00}/config/name",
                 $"/ch/{channelIndex:00}/mix/fader",
@@ -40,7 +40,7 @@ public class MixerChannels
         }
 
         // Main mix channel
-        Channels.Add("lr", new MixerChannel(
+        All.Add("lr", new MixerChannel(
             _mixer,
             $"/lr/config/name",
             $"/lr/mix/fader",
@@ -52,7 +52,7 @@ public class MixerChannels
         // Fx return channels
         for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
         {
-            Channels.Add($"rtn{fxIndex}", new MixerChannel(
+            All.Add($"rtn{fxIndex}", new MixerChannel(
                 _mixer,
                 $"/rtn/{fxIndex}/config/name",
                 $"/rtn/{fxIndex}/mix/fader",

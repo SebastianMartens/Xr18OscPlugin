@@ -14,7 +14,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     public ChannelVolumeAdjustment(): base(true)
     {   
         // create one adjustment per channel (18 channels + main mix + 4 Fx return channels)
-        foreach (var channel in Xr18OscPlugin.Mixer.MixerChannels.Channels)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
         {
             AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
             if (TryGetParameter(channel.Key, out var param))
@@ -24,7 +24,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         }
                 
         // Subscribe to channel changes to update displayed adjustment values on the dials:
-        foreach (var channel in Xr18OscPlugin.Mixer.MixerChannels.Channels.Values)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All.Values)
         {
             channel.NameChanged += (s, e) => AdjustmentValueChanged();
             channel.IsOnChanged += (s, e) => AdjustmentValueChanged();
@@ -34,7 +34,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
-        var channel = Xr18OscPlugin.Mixer.MixerChannels.Channels[actionParameter];
+        var channel = Xr18OscPlugin.Mixer.Channels.All[actionParameter];
         
         // TODO: currently we only set level of bus "lr" (main mix)
         // => introduce cocept of "current bus" (a dial should control a specific bus which is selectable)
@@ -71,12 +71,12 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     /// </summary>
     /// <param name="actionParameter"></param>
     protected override void RunCommand(string actionParameter) =>        
-        Xr18OscPlugin.Mixer.MixerChannels.Channels[actionParameter].ToggleOnOff();
+        Xr18OscPlugin.Mixer.Channels.All[actionParameter].ToggleOnOff();
 
     // Returns the adjustment value that is shown next to the dial.
     protected override string GetAdjustmentValue(string actionParameter)
     {
-        if (!Xr18OscPlugin.Mixer.MixerChannels.Channels.TryGetValue(actionParameter, out var channel))
+        if (!Xr18OscPlugin.Mixer.Channels.All.TryGetValue(actionParameter, out var channel))
             return "";
 
         //switch (currentMixBus)
@@ -90,7 +90,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
     {
-        return !Xr18OscPlugin.Mixer.MixerChannels.Channels.TryGetValue(actionParameter, out var channel)
+        return !Xr18OscPlugin.Mixer.Channels.All.TryGetValue(actionParameter, out var channel)
             ? ""
             : channel.Name ?? actionParameter;
     }
