@@ -4,6 +4,8 @@ namespace Loupedeck.Xr18OscPlugin.Actions;
 
 using System.Collections.Generic;
 
+using Loupedeck.Xr18OscPlugin.Domain;
+
 /// <summary>
 /// No useful content yet. Only for experiementing with dynamic folders.
 /// </summary>
@@ -47,7 +49,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // Subscribe to channel changes
         foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
         {
-            channel.MixSendFaderLevelChanged += (s, e) => AdjustmentValueChanged("Ch01");
+            channel.MixSendFaderLevelChanged += (s, e) => AdjustmentValueChanged(((MixerChannel)s).Key);
         }
     }
 
@@ -150,6 +152,9 @@ public class Xr18DynamicFolder : PluginDynamicFolder
 
     public override void ApplyAdjustment(string actionParameter, int diff)
     {
+        if (string.IsNullOrEmpty(currentMixBus))
+            return;
+            
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
         var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
         

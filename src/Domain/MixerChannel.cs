@@ -9,7 +9,7 @@ public class MixerChannel
 {
     private readonly Mixer _mixer;
 
-    private readonly string _index; // formatted index of the channel (e.g. "01", "02", .. "16")
+    private readonly string _index;
 
     // address patterns for OSC communication
     private readonly string _nameAddress;
@@ -43,8 +43,16 @@ public class MixerChannel
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
         _mixer.RegisterHandler(_onAddress, OnIsOnChanged);
-        _mixer.RegisterHandler(_faderLevelAddress, OnFaderLevelChanged);
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "01"), OnMixSendFaderLevelChanged); 
+        _mixer.RegisterHandler(_faderLevelAddress, OnMainFaderLevelChanged);
+
+        // Mixbus sends:
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "01"), (s, e) => OnMixSendFaderLevelChanged(e, 1)); 
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "02"), (s, e) => OnMixSendFaderLevelChanged(e, 2)); 
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "03"), (s, e) => OnMixSendFaderLevelChanged(e, 3)); 
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "04"), (s, e) => OnMixSendFaderLevelChanged(e, 4)); 
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "05"), (s, e) => OnMixSendFaderLevelChanged(e, 5)); 
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "06"), (s, e) => OnMixSendFaderLevelChanged(e, 6));
+        
         // TODO: implement meter handling
         
         // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
@@ -52,6 +60,11 @@ public class MixerChannel
         _mixer.Send(_onAddress).Wait();
         _mixer.Send(_faderLevelAddress).Wait();
         _mixer.Send(string.Format(_mixSendFaderLevelAddress, "01")).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "02")).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "03")).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "04")).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "05")).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "06")).Wait();
     }    
 
     public string Key => $"Ch{_index}";
@@ -64,8 +77,10 @@ public class MixerChannel
     public bool IsOn { get; set; } = true;
     
     public float MainFaderLevel = 0.0f;
-    public float[] MixSendFaderLevel = new float[6]; // bus index (0-based!)
 
+    public float[] MixSendFaderLevel = new float[6]; // bus index (0-based!)
+    
+    
     #region setters to send data/commands to mixer
 
     public Task SetIsOn(bool isOn) => _mixer.Send(_onAddress, isOn ? 1 : 0);
@@ -78,19 +93,9 @@ public class MixerChannel
 
     #endregion
 
-    #region events to communicate changes to consumers (plugin actions etc.)
+    #region Handlers for incoming OSC messages from mixer
 
     public event EventHandler<string>? NameChanged;
-
-    public event EventHandler<bool>? IsOnChanged;
-
-    public event EventHandler<float>? MainFaderLevelChanged;
-
-    public event EventHandler<(int, float)>? MixSendFaderLevelChanged; // (busindex, level)
-
-    #endregion
-
-    #region Handlers for incoming OSC messages from mixer
 
     private void OnNameChanged(object? sender, OscMessage e)
     {
@@ -100,6 +105,8 @@ public class MixerChannel
             NameChanged?.Invoke(this, name);
         }
     }
+
+    public event EventHandler<bool>? IsOnChanged;
 
     /// <summary>
     /// Mixer sended mute state to us
@@ -115,12 +122,14 @@ public class MixerChannel
         }
     }
 
+    public event EventHandler<float>? MainFaderLevelChanged;
+
     /// <summary>
     /// Mixer sended main mix level to us
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void OnFaderLevelChanged(object? sender, OscMessage e) 
+    private void OnMainFaderLevelChanged(object? sender, OscMessage e) 
     {
         if (e.Arguments[0] is float faderLevel)
         {
@@ -129,17 +138,20 @@ public class MixerChannel
         }
     }
 
+
+    public event EventHandler<(int, float)>? MixSendFaderLevelChanged; // (busindex, level)
+
     /// <summary>
     /// Mixer sended main mix level to us
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void OnMixSendFaderLevelChanged(object? sender, OscMessage e) 
+    private void OnMixSendFaderLevelChanged(OscMessage e, int busIndex) 
     {
         if (e.Arguments[0] is float faderLevel)
         {
-            MixSendFaderLevel[0] = faderLevel; // TODO: wrong bus index!
-            MixSendFaderLevelChanged?.Invoke(this, (1, faderLevel));
+            MixSendFaderLevel[busIndex - 1] = faderLevel;
+            MixSendFaderLevelChanged?.Invoke(this, (busIndex, faderLevel));
         }
     }
 
