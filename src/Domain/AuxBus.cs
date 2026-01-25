@@ -27,7 +27,6 @@ public class AuxBus
         Index = index;
         _nameAddress = $"/bus/{index}/config/name";
         
-
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
 

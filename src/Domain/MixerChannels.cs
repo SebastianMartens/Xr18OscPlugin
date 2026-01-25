@@ -20,7 +20,6 @@ public class MixerChannels
 
     private void InitChannels() 
     {
-        All = new List<MixerChannel>();       
         var stereo = false; // TODO: stereo config from mixer settings not yet implemented
 
         // Create regular channels 1-16

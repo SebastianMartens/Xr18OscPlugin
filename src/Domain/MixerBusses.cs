@@ -10,9 +10,6 @@ public class MixerBusses
 {
     private readonly Mixer _mixer;
 
-    /// <summary>
-    /// Key: Name of the Bus how it's identified in the mixer (e.g. "Bus 1"). Does NOT change when user renames the bus in the mixer UI.
-    /// </summary>
     public readonly List<AuxBus> All = [];
     
     public MixerBusses(Mixer mixer)

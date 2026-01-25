@@ -66,6 +66,18 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         }        
     }
 
+    public override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize)
+    {
+        if (actionParameter.StartsWith("Aux"))
+        {
+            var auxBus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == actionParameter);
+            return auxBus.Name;
+        }
+
+        // fallback
+        return actionParameter;
+    }
+
     public override IEnumerable<string> GetEncoderRotateActionNames(DeviceType deviceType)
     {
         // only show dials when a mix bus is selected
@@ -103,6 +115,8 @@ public class Xr18DynamicFolder : PluginDynamicFolder
                 return [];
         }        
     }
+
+
 
     public override void RunCommand(string actionParameter)
     {
