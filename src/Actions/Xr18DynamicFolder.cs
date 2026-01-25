@@ -34,7 +34,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
 
     public Xr18DynamicFolder()
     {
-        DisplayName = "IEM Mix";
+        DisplayName = "Mixbus";
         GroupName = "Custom Mixes (IEM, Monitors, etc.)";
         Description = "Dynamic Folder for testing";
 
@@ -42,7 +42,13 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         foreach (var bus in Xr18OscPlugin.Mixer.Busses.All)
         {
             bus.NameChanged += (s, e) => ButtonActionNamesChanged();
-        } 
+        }
+
+        // Subscribe to channel changes
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
+        {
+            channel.MixSendFaderLevelChanged += (s, e) => AdjustmentValueChanged("Ch01");
+        }
     }
 
     public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
@@ -145,7 +151,33 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     public override void ApplyAdjustment(string actionParameter, int diff)
     {
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
-        Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).SetAuxBusSendLevel(bus.Index, diff * 0.01f);
+        var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
+        
+        var newMixFaderLevel = channel.MixSendFaderLevel[bus.Index-1];
+        
+        switch (Math.Abs(diff))
+        {
+            case 1:
+                newMixFaderLevel += diff * 0.007f;
+                break;
+            case 2:
+                newMixFaderLevel += diff * 0.01f;
+                break;
+            default:
+                newMixFaderLevel += diff * 0.01f;
+                break;
+        }   
+
+        if (newMixFaderLevel > 1)
+        {
+            newMixFaderLevel = 1.0f;
+        }
+        if (newMixFaderLevel < 0)
+        {
+            newMixFaderLevel = 0.0f;
+        }
+
+        channel.SetMixSendFaderLevel(bus.Index, newMixFaderLevel).Wait();        
     }
 
     public override string GetAdjustmentValue(string actionParameter)
@@ -154,10 +186,12 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // e.g. "Bus 1 - Channel 3".
         // => TODO: identify mix (main mix, bus 1-6, fx 1-4) and channel from actionParameter
         // then read current fader level for that channel on that bus
-        
+        if (string.IsNullOrEmpty(currentMixBus))
+            return "";
+
         // TODO: read from OSC "/ch/01/mix/01/level"
         // TODO: this should work for AuxBusses but how does it work for Fx busses and Main?
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
-        return Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).MixSendLevel(bus.Index).ToString("P0");
+        return Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).MixSendFaderLevel[bus.Index-1].ToString("P0");
     }
 }

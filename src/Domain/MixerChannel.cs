@@ -15,6 +15,8 @@ public class MixerChannel
     private readonly string _nameAddress;
     private readonly string _faderLevelAddress;
     private readonly string _onAddress;
+    private readonly string _mixSendFaderLevelAddress;
+
     private readonly string _outputMeterAddress; // not finished, yet
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
@@ -30,6 +32,9 @@ public class MixerChannel
         _onAddress = onAddress;
         _faderLevelAddress = faderLevelAddress;
 
+        // mixbus sends will only work with channels (not available for main mix)
+        _mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";
+
         _outputMeterAddress = outputMeterAddress;
         _meterIndex = meterIndex;
         _meterIndex2 = meterIndex2;
@@ -39,11 +44,14 @@ public class MixerChannel
         _mixer.RegisterHandler(_nameAddress, OnNameChanged);
         _mixer.RegisterHandler(_onAddress, OnIsOnChanged);
         _mixer.RegisterHandler(_faderLevelAddress, OnFaderLevelChanged);
+        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "01"), OnMixSendFaderLevelChanged); 
+        // TODO: implement meter handling
         
         // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
         _mixer.Send(_nameAddress).Wait();
         _mixer.Send(_onAddress).Wait();
         _mixer.Send(_faderLevelAddress).Wait();
+        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "01")).Wait();
     }    
 
     public string Key => $"Ch{_index}";
@@ -55,8 +63,8 @@ public class MixerChannel
     /// </summary>
     public bool IsOn { get; set; } = true;
     
-    public float FaderLevel = 0.0f;
-
+    public float MainFaderLevel = 0.0f;
+    public float[] MixSendFaderLevel = new float[6]; // bus index (0-based!)
 
     #region setters to send data/commands to mixer
 
@@ -64,9 +72,10 @@ public class MixerChannel
 
     public Task ToggleOnOff() => SetIsOn(!IsOn);
 
-    public Task SetFaderLevel(float level) => _mixer.Send(_faderLevelAddress, level);
+    public Task SetMainFaderLevel(float level) => _mixer.Send(_faderLevelAddress, level);
 
-   
+    public Task SetMixSendFaderLevel(int auxBusNumber, float level) => _mixer.Send($"/ch/{_index}/mix/{auxBusNumber:00}/level", level);
+
     #endregion
 
     #region events to communicate changes to consumers (plugin actions etc.)
@@ -75,7 +84,9 @@ public class MixerChannel
 
     public event EventHandler<bool>? IsOnChanged;
 
-    public event EventHandler<float>? FaderLevelChanged;
+    public event EventHandler<float>? MainFaderLevelChanged;
+
+    public event EventHandler<(int, float)>? MixSendFaderLevelChanged; // (busindex, level)
 
     #endregion
 
@@ -113,25 +124,25 @@ public class MixerChannel
     {
         if (e.Arguments[0] is float faderLevel)
         {
-            FaderLevel = faderLevel;
-            FaderLevelChanged?.Invoke(this, FaderLevel);
+            MainFaderLevel = faderLevel;
+            MainFaderLevelChanged?.Invoke(this, faderLevel);
         }
     }
 
-    #endregion
-    
-    #region Mix Bus Fader Levels
-
     /// <summary>
-    /// Channel mixbus sends level
+    /// Mixer sended main mix level to us
     /// </summary>
-    /// <param name="mixBus"></param>
-    /// <returns></returns>
-    public float MixSendLevel(int auxBusIndex) => 42f;
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void OnMixSendFaderLevelChanged(object? sender, OscMessage e) 
+    {
+        if (e.Arguments[0] is float faderLevel)
+        {
+            MixSendFaderLevel[0] = faderLevel; // TODO: wrong bus index!
+            MixSendFaderLevelChanged?.Invoke(this, (1, faderLevel));
+        }
+    }
 
-    public void SetAuxBusSendLevel(int auxBusNumber, float level) => _mixer.Send($"/ch/{_index}/mix/{auxBusNumber}/level", level).Wait();
-
-    //internal void OnFaderChanged(OscMessage msg) => FaderLevel = msg.TryGetFieldValue<double>("");
 
     #endregion
 }

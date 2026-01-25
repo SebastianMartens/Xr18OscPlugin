@@ -24,14 +24,14 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             channel.NameChanged += (s, e) => AdjustmentValueChanged();
             channel.IsOnChanged += (s, e) => AdjustmentValueChanged();
-            channel.FaderLevelChanged += (s, e) => AdjustmentValueChanged();        
+            channel.MainFaderLevelChanged += (s, e) => AdjustmentValueChanged();        
         }        
     }
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
         var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
-        var newMainMixFaderLevel = channel.FaderLevel;
+        var newMainMixFaderLevel = channel.MainFaderLevel;
         
         switch (Math.Abs(diff))
         {
@@ -55,7 +55,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             newMainMixFaderLevel = 0.0f;
         }
 
-        channel.SetFaderLevel(newMainMixFaderLevel).Wait();        
+        channel.SetMainFaderLevel(newMainMixFaderLevel).Wait();        
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     protected override string GetAdjustmentValue(string actionParameter)
     {
         var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
-        return channel.IsOn ? channel.FaderLevel.ToString("#.00") : "MUTE";
+        return channel.IsOn ? channel.MainFaderLevel.ToString("#.00") : "MUTE";
     }
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
@@ -78,5 +78,4 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
         return channel.Name;
     }
-
 }
