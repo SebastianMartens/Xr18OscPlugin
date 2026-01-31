@@ -28,21 +28,24 @@ public class Mixer
 
     public string FirmwareVersion { get; private set; } = "Unknown Version";
 
+    public MainLrBus MainLrBus { get; }
+
     /// <summary>
     /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips incl. main mix and fx returns.
     /// </summary>
-    public MixerChannels Channels { get; }
+    public Channels Channels { get; }
 
     /// <summary>
     /// Busses are used for submixes like monitors or IEMs.
     /// </summary>
-    public MixerBusses Busses { get; }
+    public AuxBusses Busses { get; }
 
     public Mixer()
     {
         PluginLog.Info("Initializing Mixer domain object...");
-        Channels = new MixerChannels(this);
-        Busses = new MixerBusses(this);
+        MainLrBus = new MainLrBus(this);
+        Channels = new Channels(this);
+        Busses = new AuxBusses(this);
     }
     
 
@@ -162,7 +165,7 @@ public class Mixer
 
     public void RemoveHandler(string address, EventHandler<OscMessage> messageHandler) =>
         // Annoyingly, this doesn't actually remove it from the dictionary, even if we end up with a null
-        // value. That's not the end of the world; it's just a bit irritating.
+        // value.
         _messageHandlers.AddOrUpdate(address, messageHandler, (key, existing) => existing - messageHandler ?? existing);
 
 

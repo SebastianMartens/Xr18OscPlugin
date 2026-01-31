@@ -3,16 +3,16 @@ namespace Loupedeck.Xr18OscPlugin.Domain;
 /// <summary>
 /// We group all mixer channels here to ease initialization.
 /// </summary>
-public class MixerChannels 
+public class Channels 
 {
     private Mixer _mixer { get; }
 
     /// <summary>
     /// Gets or sets the list of channels on the mixer.
     /// </summary>
-    public List<MixerChannel> All { get; set; } = [];
+    public List<Channel> All { get; set; } = [];
 
-    public MixerChannels(Mixer mixer)
+    public Channels(Mixer mixer)
     {
         _mixer = mixer;
         InitChannels();        
@@ -27,7 +27,7 @@ public class MixerChannels
         // configured as regular channels as well (currently not yet supported here)
         for (var channelIndex = 1; channelIndex <= 16; channelIndex++)
         {
-            All.Add(new MixerChannel(
+            All.Add(new Channel(
                 _mixer,
                 $"{channelIndex:00}",
                 $"/ch/{channelIndex:00}/config/name",
@@ -39,22 +39,10 @@ public class MixerChannels
             );
         }
 
-        // Main mix channel
-        // TODO: LR is more like a bus than a channel => refactor!
-        All.Add(new MixerChannel(
-            _mixer,
-            $"lr",
-            $"/lr/config/name",
-            $"/lr/mix/fader",
-            $"/meters/5",
-            meterIndex: 6,
-            meterIndex2: 7,
-            $"/lr/mix/on"));
-
         // Fx return channels
         for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
         {
-            All.Add(new MixerChannel(
+            All.Add(new Channel(
                 _mixer,
                 $"rtn{fxIndex}",
                 $"/rtn/{fxIndex}/config/name",
