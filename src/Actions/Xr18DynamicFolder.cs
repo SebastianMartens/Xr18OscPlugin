@@ -11,6 +11,7 @@ using Loupedeck.Xr18OscPlugin.Domain;
 public class Xr18DynamicFolder : PluginDynamicFolder
 {     
     // TODO: for Loupedeck Live a set of 6 knobs is available, for Loupedeck Live S only 2.
+    // => create a lists for each supported device type
     private readonly List<string> availableChannelRanges =
     [
         "Channel 1..6",
@@ -42,7 +43,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // Subscribe to bus changes
         foreach (var bus in Xr18OscPlugin.Mixer.Busses.All)
         {
-            bus.Name.ValueChanged += (s, e) => ButtonActionNamesChanged();
+            bus.Name.ValueChanged += (s, e) => ButtonActionNamesChanged();            
         }
 
         // Subscribe to channel changes
@@ -52,6 +53,11 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         }
     }
 
+    /// <summary>
+    /// Gets the list of the actionParameters for buttons ("which buttons are defined").
+    /// </summary>
+    /// <param name="deviceType"></param>
+    /// <returns></returns>
     public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
     {
         // There are two levels: the target mix bus and the channel range selection.
@@ -73,6 +79,12 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         }        
     }
 
+    /// <summary>
+    /// Get the current display name for a button.
+    /// </summary>
+    /// <param name="actionParameter"></param>
+    /// <param name="imageSize"></param>
+    /// <returns></returns>
     public override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize)
     {
         if (actionParameter.StartsWith("Aux"))
@@ -122,8 +134,6 @@ public class Xr18DynamicFolder : PluginDynamicFolder
                 return [];
         }        
     }
-
-
 
     public override void RunCommand(string actionParameter)
     {
