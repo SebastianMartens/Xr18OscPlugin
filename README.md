@@ -1,7 +1,9 @@
 # This is a (inofficial) Loupedeck Plugin for Behringer XAir XR18
 
-The code can be used to build a Plugin for Loupedeck Controllers (nowadays Logitech or Razor branded).
-The controller then can be used to remote control the Behringer XR12/16/18 products with hardware controls like buttons and knobs.
+The code can be used to build a Plugin for Loupedeck Controllers (nowadays Logitech or Razor branded) - especially the "Loupedeck Live".
+The controller then can be used to remote control the Behringer XR12/XR16/XR18 products with hardware controls like buttons and knobs.
+
+[![.NET](https://github.com/SebastianMartens/Xr18OscPlugin/actions/workflows/dotnet.yml/badge.svg)](https://github.com/SebastianMartens/Xr18OscPlugin/actions/workflows/dotnet.yml)
 
 ## Features
 
@@ -10,7 +12,7 @@ I used .Net 8 to send and receive OSC (Open Sound Control) messages via UDP to/f
 
 The most useful feature is a dial adjustment that can be used to control the fader level and mute of the 18 input channels, the main channel and FX return channels.
 
-Another cool feature are button-commands to send any int of float value to the mixer on any custom OSC address. This can be used to control nearly all features of the mixer by configuring a button in the Loupedeck software.
+Another cool feature are button-commands to send any int or float value to the mixer on any custom OSC address. This can be used to control nearly all features of the mixer by configuring a button in the Loupedeck software.
 
 More features like adjusting bus mixes (e.g. for separate in-ear-monitoring mixes), to control input gain or to toggle compressor etc. may follow.
 
