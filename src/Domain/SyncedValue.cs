@@ -1,5 +1,6 @@
 namespace Xr18OscPlugin.Domain;
 
+using Loupedeck.Xr18OscPlugin;
 using Loupedeck.Xr18OscPlugin.Domain;
 using SharpOSC;
 
@@ -22,26 +23,28 @@ public class SyncedValue<T>
         _mixer = mixer;
         _oscAddress = oscAddress;
         _defaultValue = defaultValue;
+        Value = defaultValue;
 
         // Subscribe handlers to receive updates from mixer:
         _mixer.RegisterHandler(oscAddress, OnValueChanged);
 
         // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
-        _mixer.Send(oscAddress).Wait();
+        _mixer.Send(_oscAddress).Wait();        
+        Task.Delay(100).Wait(); // values were not updated. Honestly not sure why, but a short delay seems to fix it.
     }
 
     public Task Set(T value)
     {
         return typeof(T) == typeof(bool) 
-        ? _mixer.Send(_oscAddress, value is bool v && v ? 1 : 0) 
-        : _mixer.Send(_oscAddress, value);
+            ? _mixer.Send(_oscAddress, value is bool v && v ? 1 : 0) 
+            : _mixer.Send(_oscAddress, value);
     }
 
     private void OnValueChanged(object? sender, OscMessage e)
     {
         if (e.Arguments[0] is string stringValue && typeof(T) == typeof(string))
         {
-            // special case: empty string handling is useful as Bus names can be empty if they were not changed by user
+            // special case: empty string handling is useful as mixer will report Bus names to be "" if they were not changed by user
             Value = !string.IsNullOrEmpty(stringValue) ? (T)(object)stringValue : _defaultValue;
             ValueChanged?.Invoke(this, Value);
             return;

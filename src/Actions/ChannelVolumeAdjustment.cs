@@ -19,6 +19,14 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             }
         }
 
+        // Subscribe to channel changes to update displayed adjustment values on the dials:        
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
+        {
+            channel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
+            channel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
+            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);            
+        }
+
         // add main LR as well
         var mainLrBus = Xr18OscPlugin.Mixer.MainLrBus;
         AddParameter("lr", "Main LR Volume", "Channel Adjustments");    
@@ -26,17 +34,9 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             lrParam.ResetDisplayName = $"Mute Main LR";
         }
-        mainLrBus.Name.ValueChanged += (s, e) => AdjustmentValueChanged();
-        mainLrBus.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged();
-        mainLrBus.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged();
-
-        // Subscribe to channel changes to update displayed adjustment values on the dials:
-        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
-        {
-            channel.Name.ValueChanged += (s, e) => AdjustmentValueChanged();
-            channel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged();
-            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged();
-        }
+        mainLrBus.Name.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
     }
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
@@ -128,12 +128,12 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     // Returns the adjustment value that is shown next to the dial.
     protected override string GetAdjustmentValue(string actionParameter)
     {
+        if (actionParameter == "lr")
+            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+
         var channel = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
             return channel.IsOn.Value ? channel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
-
-        if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
 
         return "";
     }
@@ -142,10 +142,10 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     {
         var channel = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
-            return channel.Name.Value;
+            return channel.Name.Value ?? string.Empty;
         
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.Name.Value;
+            return Xr18OscPlugin.Mixer.MainLrBus.Name.Value ?? string.Empty;
 
         return actionParameter;
     }

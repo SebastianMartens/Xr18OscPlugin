@@ -34,7 +34,6 @@ public class Channel
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
-
     public Channel(
             Mixer mixer, string index, string nameAddress, string faderLevelAddress,
             string outputMeterAddress, int meterIndex, int? meterIndex2, string onAddress)
@@ -42,9 +41,6 @@ public class Channel
         _mixer = mixer;
         _index = index;                
         
-        // mixbus sends will only work with channels (not available for main mix)
-        _mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";
-
         _outputMeterAddress = outputMeterAddress;
         _meterIndex = meterIndex;
         _meterIndex2 = meterIndex2;
@@ -56,6 +52,8 @@ public class Channel
         
         // Mixbus sends:
         // TODO: refactor to use new SyncedValue class
+        // mixbus sends will only work with channels (not available for main mix)
+        _mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";
         _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "01"), (s, e) => OnBusSendFaderLevelChanged(e, 1)); 
         _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "02"), (s, e) => OnBusSendFaderLevelChanged(e, 2)); 
         _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "03"), (s, e) => OnBusSendFaderLevelChanged(e, 3)); 
