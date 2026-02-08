@@ -6,7 +6,13 @@ using System.Collections.Generic;
 using Loupedeck.Xr18OscPlugin.Domain;
 
 /// <summary>
-/// No useful content yet. Only for experiementing with dynamic folders.
+/// Dynamic folder for adjusting mix bus send levels for channels.
+/// - users place the "Aux Mix Adjustments" dynamic folder on a button in Loupedeck software
+/// - when pressing the button, first a list of available mix busses is shown (currently Aux 1-6 with use defined names)
+/// - users select a mix bus by pressing the button (if two aux busses are linked to be stereo it's sufficient to select one of them)
+/// - afterwards buttons can be used to select a channel range (e.g. "Channels 1..6", "Channels 7..12", "Channels 13..16").
+/// - When a channel range is selected, the dials of the Loupedeck can be used to adjust the mix send level for the selected 
+///   bus. The current value is shown on the display of the Loupedeck.
 /// </summary>
 public class Xr18DynamicFolder : PluginDynamicFolder
 {     
@@ -14,9 +20,9 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     // => create a lists for each supported device type
     private readonly List<string> availableChannelRanges =
     [
-        "Channel 1..6",
-        "Channel 7..12",
-        "Channel 13..16",
+        "Channels 1..6",
+        "Channels 7..12",
+        "Channels 13..16",
     ];
 
     /// <summary>
@@ -36,9 +42,9 @@ public class Xr18DynamicFolder : PluginDynamicFolder
 
     public Xr18DynamicFolder()
     {
-        DisplayName = "Mixbus";
-        GroupName = "Custom Mixes (IEM, Monitors, etc.)";
-        Description = "Dynamic Folder for testing";
+        DisplayName = "Aux Mix Adjustments";
+        GroupName = "Aux Bus Mixes";
+        Description = "Opens menu to select Aux Bus and use dials to set Mix Send Levels for each channel";
 
         // Subscribe to bus changes
         foreach (var bus in Xr18OscPlugin.Mixer.Busses.All)
@@ -71,8 +77,8 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             yield break;
         }
        
-        // otherwise show list of channel ranges
-        yield return CreateCommandName($"Current Mix Bus: {currentMixBus}");        
+        // otherwise show "Bus select" and list of channel ranges:
+        yield return CreateCommandName($"Change Bus (current: {currentMixBus})");        
         foreach (var range in availableChannelRanges)
         {
             yield return CreateCommandName(range);
@@ -87,14 +93,17 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     /// <returns></returns>
     public override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize)
     {
+        // Buttons with key "Aux1".."Aux6" represent a "Select aux bus" action:
         if (actionParameter.StartsWith("Aux"))
         {
             var auxBus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == actionParameter);
             return auxBus.Name.Value;
         }
 
-        // fallback
-        return actionParameter;
+        // Channel selection buttons have key "Channels 1..6", "Channels 7..12" or "Channels 13..16"
+        return actionParameter.StartsWith("Channels ") 
+            ? actionParameter 
+            : actionParameter;
     }
 
     public override IEnumerable<string> GetEncoderRotateActionNames(DeviceType deviceType)
@@ -105,7 +114,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
 
         switch (currentChannelRange)
         {
-            case "Channel 1..6":
+            case "Channels 1..6":
                 return [
                     CreateAdjustmentName("Ch 01"),
                     CreateAdjustmentName("Ch 02"),
@@ -114,7 +123,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
                     CreateAdjustmentName("Ch 05"),
                     CreateAdjustmentName("Ch 06")
                     ];
-            case "Channel 7..12":
+            case "Channels 7..12":
                 return [
                     CreateAdjustmentName("Ch 07"),
                     CreateAdjustmentName("Ch 08"),
@@ -123,7 +132,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
                     CreateAdjustmentName("Ch 11"),
                     CreateAdjustmentName("Ch 12")
                     ];
-            case "Channel 13..16":
+            case "Channels 13..16":
                 return [
                     CreateAdjustmentName("Ch 13"),
                     CreateAdjustmentName("Ch 14"),
@@ -137,7 +146,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
 
     public override void RunCommand(string actionParameter)
     {
-        if (actionParameter.StartsWith("Current Mix Bus:"))
+        if (actionParameter.StartsWith("Change Bus"))
         {
             // navigate up to mix bus selection
             currentMixBus = "";
@@ -198,13 +207,9 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     {
         // a dial is targeting a specific channel on a specific bus
         // e.g. "Bus 1 - Channel 3".
-        // => TODO: identify mix (main mix, bus 1-6, fx 1-4) and channel from actionParameter
-        // then read current fader level for that channel on that bus
         if (string.IsNullOrEmpty(currentMixBus))
             return "";
 
-        // TODO: read from OSC "/ch/01/mix/01/level"
-        // TODO: this should work for AuxBusses but how does it work for Fx busses and Main?
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
         return Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).BusSendFaderLevel[bus.Index-1].ToString("P0");
     }
