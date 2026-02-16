@@ -53,9 +53,12 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         }
 
         // Subscribe to channel changes
-        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels)
         {
-            channel.BusSendFaderLevelChanged += (s, e) => AdjustmentValueChanged(((Channel)s).Key);
+            foreach (var busSendFader in channel.BusSendFaderLevels)
+            {
+                busSendFader.ValueChanged += (s, e) => AdjustmentValueChanged(((Channel)s).Key);    
+            }
         }
     }
 
@@ -160,9 +163,15 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             currentMixBus = actionParameter;
             ButtonActionNamesChanged();
             EncoderActionNamesChanged();
+            var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
+            foreach (var channel in Xr18OscPlugin.Mixer.Channels)
+            {
+                channel.BusSendFaderLevels[bus.Number-1].ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);                
+            }
         }
         else if (availableChannelRanges.Contains(actionParameter))
         {
+            // user selected a channel range
             currentChannelRange = actionParameter;
             EncoderActionNamesChanged();
         }
@@ -174,22 +183,16 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             return;
             
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
-        var channel = Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter);
+        var channel = Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter);
         
-        var newMixFaderLevel = channel.BusSendFaderLevel[bus.Index-1];
-        
-        switch (Math.Abs(diff))
+        var newMixFaderLevel = channel.BusSendFaderLevels[bus.Number-1].Value;
+
+        newMixFaderLevel += Math.Abs(diff) switch
         {
-            case 1:
-                newMixFaderLevel += diff * 0.007f;
-                break;
-            case 2:
-                newMixFaderLevel += diff * 0.01f;
-                break;
-            default:
-                newMixFaderLevel += diff * 0.01f;
-                break;
-        }   
+            1 => diff * 0.007f,
+            2 => diff * 0.01f,
+            _ => diff * 0.01f,
+        };
 
         if (newMixFaderLevel > 1)
         {
@@ -200,7 +203,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             newMixFaderLevel = 0.0f;
         }
 
-        channel.SetBusSendFaderLevel(bus.Index, newMixFaderLevel).Wait();        
+        channel.BusSendFaderLevels[bus.Number-1].Set(newMixFaderLevel).Wait();        
     }
 
     public override string GetAdjustmentValue(string actionParameter)
@@ -211,6 +214,6 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             return "";
 
         var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
-        return Xr18OscPlugin.Mixer.Channels.All.Single(x => x.Key == actionParameter).BusSendFaderLevel[bus.Index-1].ToString("P0");
+        return Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter).BusSendFaderLevels[bus.Number-1].Value.ToString("P0");
     }
 }

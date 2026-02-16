@@ -14,20 +14,20 @@ public class AuxBus
     /// We can't use the user defined Name property here because that is not necessarily unique.
     /// Also using only the index as key is not nice as we use the key in context with other indexed items (e.g. "Fx1", "Fx2", ..).
     /// </summary>
-    public string Key => $"Aux{Index}";
+    public string Key => $"Aux{Number}";
 
     public AuxBus(Mixer mixer, int index)
     {
         _mixer = mixer;
-        Index = index;
+        Number = index;
                 
         Name = new SyncedValue<string>(_mixer, $"/bus/{index}/config/name", $"Bus {index}");        
     }
 
     /// <summary>
-    /// XR18 has six mix-buses numbered 1-6 (index is 1-based).
+    /// XR18 has six mix-busses numbered 1-6.
     /// </summary>
-    public int Index { get; }
+    public int Number { get; }
     
     /// <summary>
     /// Name of the bus as configured in the mixer UI (can be changed by user).

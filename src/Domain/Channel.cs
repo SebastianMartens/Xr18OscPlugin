@@ -1,11 +1,13 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using global::Xr18OscPlugin.Domain;
-using SharpOSC;
 
 
 /// <summary>
-/// Represents a single channel on the mixer. Capabilities:
+/// Represents a single channel on the mixer. 
+/// For XR18 these are channels 1-16 and the 4 fx return channels.
+/// 
+/// Capabilities:
 /// - Name
 /// - On/Off (mute)
 /// - Fader level
@@ -23,14 +25,8 @@ using SharpOSC;
 public class Channel
 {
     private readonly Mixer _mixer;
-
-    private readonly string _index;
-
-    // address patterns for OSC communication
-   
-    private readonly string _mixSendFaderLevelAddress;
-
     private readonly string _outputMeterAddress; // not finished, yet
+
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
@@ -39,7 +35,7 @@ public class Channel
             string outputMeterAddress, int meterIndex, int? meterIndex2, string onAddress)
     {
         _mixer = mixer;
-        _index = index;                
+        Key = index;
         
         _outputMeterAddress = outputMeterAddress;
         _meterIndex = meterIndex;
@@ -49,31 +45,31 @@ public class Channel
         IsOn = new SyncedValue<bool>(_mixer, onAddress, true);
         MainFaderLevel = new SyncedValue<float>(_mixer, faderLevelAddress, 0.0f);
 
-        
         // Mixbus sends:
-        // TODO: refactor to use new SyncedValue class
-        // mixbus sends will only work with channels (not available for main mix)
-        _mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "01"), (s, e) => OnBusSendFaderLevelChanged(e, 1)); 
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "02"), (s, e) => OnBusSendFaderLevelChanged(e, 2)); 
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "03"), (s, e) => OnBusSendFaderLevelChanged(e, 3)); 
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "04"), (s, e) => OnBusSendFaderLevelChanged(e, 4)); 
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "05"), (s, e) => OnBusSendFaderLevelChanged(e, 5)); 
-        _mixer.RegisterHandler(string.Format(_mixSendFaderLevelAddress, "06"), (s, e) => OnBusSendFaderLevelChanged(e, 6));
-        
+        // mixbus sends will only work with channels 1..16 and Fx Return (not available for main mix)
+        string mixSendFaderLevelAddress;
+        if (nameAddress.Contains("/ch/"))
+        {
+            mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";   
+            for (var busIndex = 1; busIndex <= 6; busIndex++)
+            {
+                BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
+            }     
+        }
+        else // it's a fx return channel
+        {
+            // TODO: index here is "rtn1".."rtn4", but we need the fxIndex (1..4) for the address => fix namings!
+            // TODO: test
+            mixSendFaderLevelAddress = $"/rtn/{index}/mix/{{0}}/level";
+            // TODO: create separate fader levels collecion similar to BusSendFaderLevels or reuse the same?
+        }
+    
+                
         // TODO: implement meter handling
-        
-        // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:                        
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "01")).Wait();
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "02")).Wait();
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "03")).Wait();
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "04")).Wait();
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "05")).Wait();
-        _mixer.Send(string.Format(_mixSendFaderLevelAddress, "06")).Wait();
     }    
 
-    public string Key => $"Ch {_index}";
-    
+    public string Key => $"Ch {field}";
+        
     public SyncedValue<string> Name { get; }
 
     /// <summary>
@@ -83,24 +79,5 @@ public class Channel
     
     public SyncedValue<float> MainFaderLevel { get; }
 
-    public float[] BusSendFaderLevel = new float[6]; // bus index (0-based!)
-    
-
-    public Task SetBusSendFaderLevel(int auxBusNumber, float level) => _mixer.Send($"/ch/{_index}/mix/{auxBusNumber:00}/level", level);
-
-    public event EventHandler<(int, float)>? BusSendFaderLevelChanged; // (busindex, level)
-
-    /// <summary>
-    /// Mixer sended main mix level to us
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void OnBusSendFaderLevelChanged(OscMessage e, int busIndex) 
-    {
-        if (e.Arguments[0] is float faderLevel)
-        {
-            BusSendFaderLevel[busIndex - 1] = faderLevel;
-            BusSendFaderLevelChanged?.Invoke(this, (busIndex, faderLevel));
-        }
-    }
+    public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[6]; // bus index (caution, array index is 0-based!)
 }

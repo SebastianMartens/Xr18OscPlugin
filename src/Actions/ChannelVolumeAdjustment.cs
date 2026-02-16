@@ -8,7 +8,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     public ChannelVolumeAdjustment(): base(true)
     {   
         // create one adjustment per channel (18 channels + 4 Fx return channels)
-        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels)
         {
             // "AddParameter" is a badly named "Please create an adjustment item in the Loupedeck software for me".
             AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
@@ -20,7 +20,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         }
 
         // Subscribe to channel changes to update displayed adjustment values on the dials:        
-        foreach (var channel in Xr18OscPlugin.Mixer.Channels.All)
+        foreach (var channel in Xr18OscPlugin.Mixer.Channels)
         {
             channel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
             channel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
@@ -72,7 +72,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             return;
         }
         else {
-            var channel = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
+            var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
             if (channel == null)
                 return;
             var newMainMixFaderLevel = channel.MainFaderLevel.Value;
@@ -117,7 +117,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             return;
         }
 
-        var ch = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
+        var ch = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (ch != null)
         {
             var oldValue = ch.IsOn.Value;
@@ -131,7 +131,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         if (actionParameter == "lr")
             return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
 
-        var channel = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
+        var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
             return channel.IsOn.Value ? channel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
 
@@ -140,7 +140,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
     {
-        var channel = Xr18OscPlugin.Mixer.Channels.All.SingleOrDefault(x => x.Key == actionParameter);
+        var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
             return channel.Name.Value ?? string.Empty;
         
