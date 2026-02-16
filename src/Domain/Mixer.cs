@@ -38,15 +38,15 @@ public class Mixer
     /// <summary>
     /// Busses are used for submixes like monitors or IEMs.
     /// </summary>
-    public AuxBusses Busses { get; }
+    public List<AuxBus> Busses { get; } = [];
 
     public Mixer()
     {
         PluginLog.Info("Initializing Mixer domain object...");
         MainLrBus = new MainLrBus(this);        
-        Busses = new AuxBusses(this);
-
+        
         InitChannels();
+        InitBuses();
     }
 
     private void InitChannels()
@@ -82,6 +82,14 @@ public class Mixer
                 meterIndex: 4 + fxIndex, // TODO: verify meter indices (not tested yet)
                 meterIndex2: null,
                 $"/rtn/{fxIndex}/mix/on"));
+        }
+    }
+
+    private void InitBuses()
+    {
+        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        {
+            Busses.Add(new AuxBus(this, busIndex));
         }
     }
 

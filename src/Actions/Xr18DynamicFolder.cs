@@ -47,7 +47,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         Description = "Opens menu to select Aux Bus and use dials to set Mix Send Levels for each channel";
 
         // Subscribe to bus changes
-        foreach (var bus in Xr18OscPlugin.Mixer.Busses.All)
+        foreach (var bus in Xr18OscPlugin.Mixer.Busses)
         {
             bus.Name.ValueChanged += (s, e) => ButtonActionNamesChanged();            
         }
@@ -73,7 +73,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // Initially, we show the list of available mix busses.       
         if (string.IsNullOrEmpty(currentMixBus))
         {
-            foreach (var bus in Xr18OscPlugin.Mixer.Busses.All)
+            foreach (var bus in Xr18OscPlugin.Mixer.Busses)
             {
                 yield return CreateCommandName(bus.Key);
             }
@@ -99,7 +99,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         // Buttons with key "Aux1".."Aux6" represent a "Select aux bus" action:
         if (actionParameter.StartsWith("Aux"))
         {
-            var auxBus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == actionParameter);
+            var auxBus = Xr18OscPlugin.Mixer.Busses.Single(x => x.Key == actionParameter);
             return auxBus.Name.Value;
         }
 
@@ -157,13 +157,13 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             EncoderActionNamesChanged();
         }
         else
-        if (Xr18OscPlugin.Mixer.Busses.All.Select(x => x.Key).Contains(actionParameter))
+        if (Xr18OscPlugin.Mixer.Busses.Select(x => x.Key).Contains(actionParameter))
         {
             // user selected a mix bus
             currentMixBus = actionParameter;
             ButtonActionNamesChanged();
             EncoderActionNamesChanged();
-            var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
+            var bus = Xr18OscPlugin.Mixer.Busses.Single(x => x.Key == currentMixBus);
             foreach (var channel in Xr18OscPlugin.Mixer.Channels)
             {
                 channel.BusSendFaderLevels[bus.Number-1].ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);                
@@ -182,7 +182,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         if (string.IsNullOrEmpty(currentMixBus))
             return;
             
-        var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
+        var bus = Xr18OscPlugin.Mixer.Busses.Single(x => x.Key == currentMixBus);
         var channel = Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter);
         
         var newMixFaderLevel = channel.BusSendFaderLevels[bus.Number-1].Value;
@@ -213,7 +213,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
         if (string.IsNullOrEmpty(currentMixBus))
             return "";
 
-        var bus = Xr18OscPlugin.Mixer.Busses.All.Single(x => x.Key == currentMixBus);
+        var bus = Xr18OscPlugin.Mixer.Busses.Single(x => x.Key == currentMixBus);
         return Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter).BusSendFaderLevels[bus.Number-1].Value.ToString("P0");
     }
 }
