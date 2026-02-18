@@ -2,7 +2,6 @@ namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using global::Xr18OscPlugin.Domain;
 
-
 /// <summary>
 /// Represents a single FX return channel on the mixer. 
 /// 
@@ -21,12 +20,11 @@ using global::Xr18OscPlugin.Domain;
 /// - Fx Sends
 /// - ...
 /// </summary>
-public class FxChannel
+public class FxChannel: IChannelBase
 {
     private readonly Mixer _mixer;
 
     private readonly string _outputMeterAddress; // not finished, yet
-
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
@@ -37,13 +35,12 @@ public class FxChannel
         _mixer = mixer;
         Index = index;
         
-        Name = new SyncedValue<string>(_mixer, $"/rtn/{Index}/config/name", "Unknown Channel");
+        Name = new SyncedValue<string>(_mixer, $"/rtn/{Index}/config/name", $"FX {Index}");
         IsOn = new SyncedValue<bool>(_mixer, $"/rtn/{Index}/mix/on", true);
         MainFaderLevel = new SyncedValue<float>(_mixer, $"/rtn/{Index}/mix/fader", 0.0f);
 
-        // Mixbus sends:
-        // mixbus sends will only work with channels 1..16 and Fx Return (not available for main mix)
-        string mixSendFaderLevelAddress;
+        // Mixbus sends:        
+        
         // if (nameAddress.Contains("/ch/"))
         // {
         //     mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";   
@@ -52,21 +49,18 @@ public class FxChannel
         //         BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
         //     }     
         // }
-        //else // it's a fx return channel
-        //{
-            // TODO: index here is "rtn1".."rtn4", but we need the fxIndex (1..4) for the address => fix namings!
-            // TODO: test
-            mixSendFaderLevelAddress = $"/rtn/{index}/mix/{{0}}/level";
-            // TODO: create separate fader levels collecion similar to BusSendFaderLevels or reuse the same?
-        //}
+                
             
+        // index is without leading 0 here! Channel index WITH leading 0!
+        var mixSendFaderLevelAddress = $"/rtn/{Index}/mix/{{0}}/level";           
+    
         // TODO: implement meter handling
         _outputMeterAddress = $"/meters/3";
         _meterIndex = 4 + Index;
         _meterIndex2 = null;
     }    
 
-    public string Key => $"rtn{Index}"; // TODO unify format? Behringer sometimes uses "01" and sometimes "1"
+    public string Key => $"Fx Return {Index}";
         
     public SyncedValue<string> Name { get; }
 

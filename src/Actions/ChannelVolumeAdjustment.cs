@@ -1,24 +1,25 @@
 namespace Loupedeck.Xr18OscPlugin.Actions;
 
+using Loupedeck.Xr18OscPlugin.Domain;
+
 /// <summary>
 /// Control main mix volume of individual channels on the mixer.
+/// This class is resuable for both regular channels and fx return channels..
 /// </summary>
 public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 {   
     public ChannelVolumeAdjustment(): base(true)
     {   
-        // create one adjustment per channel (18 channels + 4 Fx return channels)
+        // create one adjustment per input channel
         foreach (var channel in Xr18OscPlugin.Mixer.Channels)
         {
             // "AddParameter" is a badly named "Please create an adjustment item in the Loupedeck software for me".
-            AddParameter(channel.Key, $"{channel.Key} Volume", "Channel Adjustments");
-            
+            AddParameter(channel.Key, $"{channel.Key} Volume", "Input Channel Adjustments");            
             if (TryGetParameter(channel.Key, out var param))
             {
-                param.ResetDisplayName = $"Mute Channel {channel.Key}";
+                param.ResetDisplayName = $"Mute {channel.Key}";
             }
         }
-
         // Subscribe to channel changes to update displayed adjustment values on the dials:        
         foreach (var channel in Xr18OscPlugin.Mixer.Channels)
         {
@@ -27,9 +28,27 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);            
         }
 
+
+        // create one adjustment per fx channel
+        foreach (var fxChannel in Xr18OscPlugin.Mixer.FxChannels)
+        {            
+            AddParameter(fxChannel.Key, $"{fxChannel.Key} Volume", "FX Channel Adjustments");            
+            if (TryGetParameter(fxChannel.Key, out var param))
+            {
+                param.ResetDisplayName = $"Mute {fxChannel.Key}";
+            }
+        }
+        foreach (var fxChannel in Xr18OscPlugin.Mixer.FxChannels)
+        {
+            fxChannel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);
+            fxChannel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);
+            fxChannel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);            
+        }
+        
+
         // add main LR as well
         var mainLrBus = Xr18OscPlugin.Mixer.MainLrBus;
-        AddParameter("lr", "Main LR Volume", "Channel Adjustments");    
+        AddParameter("lr", "Main LR Volume", "Main Adjustments");    
         if (TryGetParameter("lr", out var lrParam))
         {
             lrParam.ResetDisplayName = $"Mute Main LR";
@@ -41,66 +60,42 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
-        if (actionParameter == "lr")
+        IChannelBase? faderObj;
+        switch (actionParameter)
         {
-            var lrMix = Xr18OscPlugin.Mixer.MainLrBus;
-            var newLrFaderLevel = lrMix.MainFaderLevel.Value;
-        
-            switch (Math.Abs(diff))
+            case "lr":
+                faderObj = (IChannelBase?)Xr18OscPlugin.Mixer.MainLrBus;
+                break;
+            default:
             {
-                case 1:
-                    newLrFaderLevel += diff * 0.007f;
-                    break;
-                case 2:
-                    newLrFaderLevel += diff * 0.01f;
-                    break;
-                default:
-                    newLrFaderLevel += diff * 0.01f;
-                    break;
-            }   
-
-            if (newLrFaderLevel > 1)
-            {
-                newLrFaderLevel = 1.0f;
+                faderObj = actionParameter.StartsWith("Fx")
+                    ? Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter)
+                    : Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
+                break;
             }
-            if (newLrFaderLevel < 0)
-            {
-                newLrFaderLevel = 0.0f;
-            }
-
-            lrMix.MainFaderLevel.Set(newLrFaderLevel).Wait();        
-            return;
         }
-        else {
-            var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
-            if (channel == null)
-                return;
-            var newMainMixFaderLevel = channel.MainFaderLevel.Value;
-            
-            switch (Math.Abs(diff))
-            {
-                case 1:
-                    newMainMixFaderLevel += diff * 0.007f;
-                    break;
-                case 2:
-                    newMainMixFaderLevel += diff * 0.01f;
-                    break;
-                default:
-                    newMainMixFaderLevel += diff * 0.01f;
-                    break;
-            }   
 
-            if (newMainMixFaderLevel > 1)
-            {
-                newMainMixFaderLevel = 1.0f;
-            }
-            if (newMainMixFaderLevel < 0)
-            {
-                newMainMixFaderLevel = 0.0f;
-            }
+        if (faderObj == null)
+            return;
+        var newFaderLevel = faderObj.MainFaderLevel.Value;
 
-            channel.MainFaderLevel.Set(newMainMixFaderLevel).Wait();   
-        }     
+        newFaderLevel += Math.Abs(diff) switch
+        {
+            1 => diff * 0.007f,
+            2 => diff * 0.01f,
+            _ => diff * 0.01f,
+        };
+
+        if (newFaderLevel > 1)
+        {
+            newFaderLevel = 1.0f;
+        }
+        if (newFaderLevel < 0)
+        {
+            newFaderLevel = 0.0f;
+        }
+
+        faderObj.MainFaderLevel.Set(newFaderLevel).Wait();        
     }
 
     /// <summary>
@@ -110,19 +105,20 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     /// <param name="actionParameter"></param>
     protected override void RunCommand(string actionParameter)
     {
-        if (actionParameter == "lr")
+        IChannelBase? channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
+        if (channel == null && actionParameter.StartsWith("Fx"))
         {
-            var oldValue = Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value;
-            Xr18OscPlugin.Mixer.MainLrBus.IsOn.Set(!oldValue).Wait();
+            channel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
+        }
+        if (channel == null && actionParameter == "lr")
+        {
+            channel = Xr18OscPlugin.Mixer.MainLrBus;
+        }
+        if (channel == null)
             return;
-        }
 
-        var ch = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
-        if (ch != null)
-        {
-            var oldValue = ch.IsOn.Value;
-            ch.IsOn.Set(!oldValue).Wait();
-        }
+        var oldValue = channel.IsOn.Value;
+        channel.IsOn.Set(!oldValue).Wait();        
     }
 
     // Returns the adjustment value that is shown next to the dial.
@@ -131,6 +127,13 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         if (actionParameter == "lr")
             return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
 
+        if (actionParameter.StartsWith("Fx"))
+        {
+            var fxChannel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
+            if (fxChannel != null)
+                return fxChannel.IsOn.Value ? fxChannel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+        }
+        
         var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
             return channel.IsOn.Value ? channel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
@@ -140,12 +143,16 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
     {
-        var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
+        IChannelBase? channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
             return channel.Name.Value ?? string.Empty;
         
+        channel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
+        if (channel != null)
+            return channel.Name.Value ?? string.Empty;
+
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.Name.Value ?? string.Empty;
+            return Xr18OscPlugin.Mixer.MainLrBus.Name.Value ?? string.Empty;       
 
         return actionParameter;
     }

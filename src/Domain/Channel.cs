@@ -22,7 +22,7 @@ using global::Xr18OscPlugin.Domain;
 /// - Fx Sends
 /// - ...
 /// </summary>
-public class Channel
+public class Channel: IChannelBase
 {
     private readonly Mixer _mixer;
     private readonly string _outputMeterAddress; // not finished, yet
@@ -67,9 +67,6 @@ public class Channel
         
     public SyncedValue<string> Name { get; }
 
-    /// <summary>
-    /// "On" or "Off" (muted) on main mix
-    /// </summary>
     public SyncedValue<bool> IsOn { get; }
     
     public SyncedValue<float> MainFaderLevel { get; }

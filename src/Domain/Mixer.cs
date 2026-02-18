@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using global::Xr18OscPlugin.Domain;
 using Loupedeck.Xr18OscPlugin;
 using SharpOSC;
 
@@ -31,16 +30,19 @@ public class Mixer
     public MainLrBus MainLrBus { get; }
 
     /// <summary>
-    /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips incl. main mix and fx returns.
+    /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips.
     /// </summary>
-    public List<Channel> Channels { get; } = [with(16)];
+    public List<Channel> Channels { get; } = new ();
 
-    public List<FxChannel> FxChannels { get; } = [with(4)];
+    /// <summary>
+    /// Similar to input channels, but control the fx return channels. 
+    /// </summary>
+    public List<FxChannel> FxChannels { get; } = new ();
 
     /// <summary>
     /// Busses are used for submixes like monitors or IEMs.
     /// </summary>
-    public List<AuxBus> Busses { get; } = [];
+    public List<AuxBus> Busses { get; } = new ();
 
     public Mixer()
     {

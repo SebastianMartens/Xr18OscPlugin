@@ -5,7 +5,7 @@ using global::Xr18OscPlugin.Domain;
 /// <summary>
 /// Represents the Main LR channel on the mixer.
 /// </summary>
-public class MainLrBus
+public class MainLrBus: IChannelBase
 {    
     private Mixer _mixer { get; }
 
