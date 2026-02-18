@@ -26,49 +26,44 @@ public class Channel
 {
     private readonly Mixer _mixer;
     private readonly string _outputMeterAddress; // not finished, yet
-
     private readonly int _meterIndex;// not finished, yet
     private readonly int? _meterIndex2;// not finished, yet
 
-    public Channel(
-            Mixer mixer, string index, string nameAddress, string faderLevelAddress,
-            string outputMeterAddress, int meterIndex, int? meterIndex2, string onAddress)
+    /// <summary>
+    /// Creates a new channel instance for the given mixer and channel index.
+    /// </summary>
+    /// <param name="mixer"></param>
+    /// <param name="index">Channel index 1..18 (1-based)</param>
+    public Channel(Mixer mixer, int index)
     {
         _mixer = mixer;
-        Key = index;
+        Index = index;
         
-        _outputMeterAddress = outputMeterAddress;
-        _meterIndex = meterIndex;
-        _meterIndex2 = meterIndex2;
-        
-        Name = new SyncedValue<string>(_mixer, nameAddress, "Unknown Channel");
-        IsOn = new SyncedValue<bool>(_mixer, onAddress, true);
-        MainFaderLevel = new SyncedValue<float>(_mixer, faderLevelAddress, 0.0f);
+        var stereo = false; // TODO: stereo config from mixer settings not yet implemented
+      
+        Name = new SyncedValue<string>(_mixer, $"/ch/{Index:00}/config/name", "Unknown Channel");
+        IsOn = new SyncedValue<bool>(_mixer, $"/ch/{Index:00}/mix/on", true);
+        MainFaderLevel = new SyncedValue<float>(_mixer, $"/ch/{Index:00}/mix/fader", 0.0f);
 
         // Mixbus sends:
         // mixbus sends will only work with channels 1..16 and Fx Return (not available for main mix)
-        string mixSendFaderLevelAddress;
-        if (nameAddress.Contains("/ch/"))
+        string mixSendFaderLevelAddress;    
+        
+        mixSendFaderLevelAddress = $"/ch/{Index:00}/mix/{{0}}/level";   
+        for (var busIndex = 1; busIndex <= 6; busIndex++)
         {
-            mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";   
-            for (var busIndex = 1; busIndex <= 6; busIndex++)
-            {
-                BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
-            }     
-        }
-        else // it's a fx return channel
-        {
-            // TODO: index here is "rtn1".."rtn4", but we need the fxIndex (1..4) for the address => fix namings!
-            // TODO: test
-            mixSendFaderLevelAddress = $"/rtn/{index}/mix/{{0}}/level";
-            // TODO: create separate fader levels collecion similar to BusSendFaderLevels or reuse the same?
-        }
-    
-                
+            BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
+        }     
+            
         // TODO: implement meter handling
+        _outputMeterAddress = $"/meters/1";
+        _meterIndex = Index - 1;
+        _meterIndex2 = stereo ? Index : default(int?);
     }    
 
-    public string Key => $"Ch {field}";
+    public int Index { get; }
+
+    public string Key => $"Ch {Index:00}";
         
     public SyncedValue<string> Name { get; }
 
