@@ -60,23 +60,18 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
     {
-        IChannelBase? faderObj;
-        switch (actionParameter)
+        IChannelBase? faderObj = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
+        if (faderObj == null && actionParameter.StartsWith("Fx"))
         {
-            case "lr":
-                faderObj = (IChannelBase?)Xr18OscPlugin.Mixer.MainLrBus;
-                break;
-            default:
-            {
-                faderObj = actionParameter.StartsWith("Fx")
-                    ? Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter)
-                    : Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
-                break;
-            }
+            faderObj = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
         }
-
+        if (faderObj == null && actionParameter == "lr")
+        {
+            faderObj = Xr18OscPlugin.Mixer.MainLrBus;
+        }
         if (faderObj == null)
             return;
+        
         var newFaderLevel = faderObj.MainFaderLevel.Value;
 
         newFaderLevel += Math.Abs(diff) switch
