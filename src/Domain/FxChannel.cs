@@ -24,9 +24,9 @@ public class FxChannel: IChannelBase
 {
     private readonly Mixer _mixer;
 
-    private readonly string _outputMeterAddress; // not finished, yet
-    private readonly int _meterIndex;// not finished, yet
-    private readonly int? _meterIndex2;// not finished, yet
+    // private readonly string _outputMeterAddress; // not finished, yet
+    // private readonly int _meterIndex;// not finished, yet
+    // private readonly int? _meterIndex2;// not finished, yet
 
     public int Index { get; }
 
@@ -39,25 +39,18 @@ public class FxChannel: IChannelBase
         IsOn = new SyncedValue<bool>(_mixer, $"/rtn/{Index}/mix/on", true);
         MainFaderLevel = new SyncedValue<float>(_mixer, $"/rtn/{Index}/mix/fader", 0.0f);
 
-        // Mixbus sends:        
-        
-        // if (nameAddress.Contains("/ch/"))
-        // {
-        //     mixSendFaderLevelAddress = $"/ch/{index}/mix/{{0}}/level";   
-        //     for (var busIndex = 1; busIndex <= 6; busIndex++)
-        //     {
-        //         BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
-        //     }     
-        // }
-                
-            
+        // Mixbus sends
         // index is without leading 0 here! Channel index WITH leading 0!
-        var mixSendFaderLevelAddress = $"/rtn/{Index}/mix/{{0}}/level";           
+        var mixSendFaderLevelAddress = $"/rtn/{Index}/mix/{{0}}/level";
+        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        {
+            BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
+        }
     
         // TODO: implement meter handling
-        _outputMeterAddress = $"/meters/3";
-        _meterIndex = 4 + Index;
-        _meterIndex2 = null;
+        // _outputMeterAddress = $"/meters/3";
+        // _meterIndex = 4 + Index;
+        // _meterIndex2 = null;
     }    
 
     public string Key => $"Fx Return {Index}";

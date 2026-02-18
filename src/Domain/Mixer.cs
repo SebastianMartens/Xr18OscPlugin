@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Loupedeck.Xr18OscPlugin;
 using SharpOSC;
 
-
 /// <summary>
 /// Represents a Behringer XR18 digital mixer.
 /// 
@@ -48,7 +47,7 @@ public class Mixer
     {
         PluginLog.Info("Initializing Mixer domain object...");
         MainLrBus = new MainLrBus(this);        
-        
+                
         // Create regular channels 1-16
         // Channels 17/18 are Line Inputs and usually used for USB return but can be 
         // configured as regular channels as well (currently not yet supported here)
@@ -57,16 +56,17 @@ public class Mixer
             Channels.Add(new Channel(this, channelIndex));
         }
 
-        // Fx return channels
-        for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
-        {
-            FxChannels.Add(new FxChannel(this, fxIndex));
-        }
-
         // Mixbusses Aux1..Aux5
         for (var busIndex = 1; busIndex <= 6; busIndex++)
         {
             Busses.Add(new AuxBus(this, busIndex));
+        }
+
+        // Fx return channels
+        // Need to be created after busses because they need to know about the busses for the bus sends
+        for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
+        {
+            FxChannels.Add(new FxChannel(this, fxIndex));
         }
     }
 
