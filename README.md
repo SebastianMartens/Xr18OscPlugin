@@ -8,7 +8,7 @@ The controller then can be used to remote control the Behringer XR12/16/18 produ
 This plugin is an early project in "experimental" stage (as of Jan 2026).
 I used .Net 8 to send and receive OSC (Open Sound Control) messages via UDP to/from the Behringer digital mixer. The Plugin was developed for and works with Loupedeck Version > 6.0 and the "Loupedeck Live" hardware (other hardware variants will work, too).
 
-The most useful feature is a dial adjustment that can be used to control the fader level and mute of the 18 input channels, the main channel and FX return channels.
+The most useful feature is a dial adjustment that can be used to control the main mix fader levels and mutes of the 18 input channels, the main channel and FX return channels.
 
 Another cool feature are button-commands to send any int of float value to the mixer on any custom OSC address. This can be used to control nearly all features of the mixer by configuring a button in the Loupedeck software.
 

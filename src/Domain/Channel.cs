@@ -4,7 +4,7 @@ using global::Xr18OscPlugin.Domain;
 
 /// <summary>
 /// Represents a single channel on the mixer. 
-/// For XR18 these are channels 1-16 and the 4 fx return channels.
+/// For XR18 these are channels 1-18 and the 4 fx return channels.
 /// 
 /// Capabilities:
 /// - Name
@@ -43,7 +43,7 @@ public class Channel: IChannelBase
         MainFaderLevel = new SyncedValue<float>(_mixer, $"/ch/{Index:00}/mix/fader", 0.0f);
 
         // Mixbus sends:
-        // mixbus sends will only work with channels 1..16 and Fx Return (not available for main mix)
+        // mixbus sends will only work with channels 1..18 and Fx Return (not available for main mix)
         var mixSendFaderLevelAddress = $"/ch/{Index:00}/mix/{{0}}/level";   
         for (var busIndex = 1; busIndex <= 6; busIndex++)
         {

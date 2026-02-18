@@ -8,7 +8,7 @@ using Loupedeck.Xr18OscPlugin.Domain;
 /// - users place the "Aux Mix Adjustments" dynamic folder on a button in Loupedeck software
 /// - when pressing the button, first a list of available mix busses is shown (currently Aux 1-6 with use defined names)
 /// - users select a mix bus by pressing the button (if two aux busses are linked to be stereo it's sufficient to select one of them)
-/// - afterwards buttons can be used to select a channel range (e.g. "Channels 1..6", "Channels 7..12", "Channels 13..16").
+/// - afterwards buttons can be used to select a channel range (e.g. "Channels 1..6", "Channels 7..12", "Channels 13..18").
 /// - When a channel range is selected, the dials of the Loupedeck can be used to adjust the mix send level for the selected 
 ///   bus. The current value is shown on the display of the Loupedeck.
 /// </summary>
@@ -20,7 +20,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     [
         "Channels 1..6",
         "Channels 7..12",
-        "Channels 13..16",
+        "Channels 13..18",
         // TODO: we could also support FX1-4 here.
     ];
 
@@ -111,7 +111,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             return auxBus.Name.Value;
         }
 
-        // Channel selection buttons have key "Channels 1..6", "Channels 7..12" or "Channels 13..16"
+        // Channel selection buttons have key "Channels 1..6", "Channels 7..12" or "Channels 13..18"
         return actionParameter.StartsWith("Channels ") 
             ? actionParameter 
             : actionParameter;
@@ -143,12 +143,14 @@ public class Xr18DynamicFolder : PluginDynamicFolder
                     CreateAdjustmentName("Ch 11"),
                     CreateAdjustmentName("Ch 12")
                     ];
-            case "Channels 13..16":
+            case "Channels 13..18":
                 return [
                     CreateAdjustmentName("Ch 13"),
                     CreateAdjustmentName("Ch 14"),
                     CreateAdjustmentName("Ch 15"),
-                    CreateAdjustmentName("Ch 16")
+                    CreateAdjustmentName("Ch 16"),
+                    CreateAdjustmentName("Ch 17"),
+                    CreateAdjustmentName("Ch 18")
                     ];
             default:
                 return [];

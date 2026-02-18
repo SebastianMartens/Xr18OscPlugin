@@ -50,8 +50,8 @@ public class Mixer
                 
         // Create regular channels 1-16
         // Channels 17/18 are Line Inputs and usually used for USB return but can be 
-        // configured as regular channels as well (currently not yet supported here)
-        for (var channelIndex = 1; channelIndex <= 16; channelIndex++)
+        // configured as regular channels as well
+        for (var channelIndex = 1; channelIndex <= 18; channelIndex++)
         {
             Channels.Add(new Channel(this, channelIndex));
         }
