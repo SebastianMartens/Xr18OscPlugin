@@ -38,7 +38,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    
+    <!-- Prevent stale generated files under src/obj (for example after config/path changes) from being compiled and causing duplicate assembly attributes. -->
+    <Compile Remove="obj\**\*.cs" />
   </ItemGroup>
 
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
