@@ -1,6 +1,5 @@
 namespace Xr18OscPlugin.Domain;
 
-using Loupedeck.Xr18OscPlugin;
 using Loupedeck.Xr18OscPlugin.Domain;
 using SharpOSC;
 
@@ -9,7 +8,7 @@ using SharpOSC;
 /// </summary>
 public class SyncedValue<T>
 {
-    private readonly Mixer _mixer;
+    private readonly IOscClient _oscClient;
     private readonly string _oscAddress;
 
     private readonly T _defaultValue;
@@ -18,26 +17,22 @@ public class SyncedValue<T>
     
     public event EventHandler<T>? ValueChanged;
     
-    public SyncedValue(Mixer mixer, string oscAddress, T defaultValue)
+    public SyncedValue(IOscClient oscClient, string oscAddress, T defaultValue)
     {
-        _mixer = mixer;
+        _oscClient = oscClient;
         _oscAddress = oscAddress;
         _defaultValue = defaultValue;
         Value = defaultValue;
 
         // Subscribe handlers to receive updates from mixer:
-        _mixer.RegisterHandler(oscAddress, OnValueChanged);
-
-        // Init values: Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
-        _mixer.Send(_oscAddress).Wait();        
-        Task.Delay(100).Wait(); // values were not updated. Honestly not sure why, but a short delay seems to fix it.
+        _oscClient.RegisterHandler(oscAddress, OnValueChanged);
     }
 
     public Task Set(T value)
     {
         return typeof(T) == typeof(bool) 
-            ? _mixer.Send(_oscAddress, value is bool v && v ? 1 : 0) 
-            : _mixer.Send(_oscAddress, value);
+            ? _oscClient.Send(_oscAddress, value is bool v && v ? 1 : 0) 
+            : _oscClient.Send(_oscAddress, value);
     }
 
     private void OnValueChanged(object? sender, OscMessage e)

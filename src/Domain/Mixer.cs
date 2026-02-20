@@ -14,7 +14,7 @@ using SharpOSC;
 /// - has only as few own logic as necessary
 /// - handles communication with the mixer via OSC (Open Sound Control)
 /// </summary>
-public class Mixer
+public class Mixer: IOscClient
 {
     /// <summary>
     /// Name of mixer as reported by the mixer itself.
