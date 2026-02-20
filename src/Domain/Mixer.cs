@@ -72,7 +72,7 @@ public class Mixer: IOscClient
 
     #region connection Plugin <=> Mixer
 
-    public UdpOscConnection? UdpOscConnection { get; private set; }
+    private UdpOscConnection? _udpOscConnection { get; set; }
 
     /// <summary>
     /// Timer used to send keep-alive pings to the mixer each few seconds.
@@ -98,29 +98,41 @@ public class Mixer: IOscClient
     /// Reconnects this plugin to the mixer via OSC (Open Sound Control)
     /// We fist trigger a discovery process to find the current IP address.
     /// </summary>
-    public async Task ReconnectOsc()
+    public async Task<bool> ReconnectOsc()
     {
         if (string.IsNullOrEmpty(OscRemoteIpAddress) && !await DiscoverMixer().ConfigureAwait(false))
-            return;
+            return false;
             
-        UdpOscConnection?.Dispose();
-        UdpOscConnection = new UdpOscConnection(OscRemoteIpAddress, OscRemotePort);
+        _udpOscConnection?.Dispose();
+        _udpOscConnection = new UdpOscConnection(OscRemoteIpAddress, OscRemotePort);
 
         try
         {
             // Setup keep alive ping to mixer
             // Do this in the background each 7 seconds.
+            timer?.Dispose();
             timer = new Timer(SendKeepAlivePing, null, 0, 7000);
-            void SendKeepAlivePing(object? state) => UdpOscConnection.Send(new OscMessage("/xremote"));
+            void SendKeepAlivePing(object? state) => _udpOscConnection.Send(new OscMessage("/xremote"));
 
             // Setup listener to receive messages from mixer        
-            UdpOscConnection.MessageReceived += HandlePacketReceived;
-            UdpOscConnection.StartReceiving();
+            _udpOscConnection.MessageReceived += HandlePacketReceived;
+            _udpOscConnection.StartReceiving();
+
+            // if there are already registered handlers, then we should try to get initial values.
+            // => Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
+            foreach (var handler in _messageHandlers.ToList())
+            {
+                await Send(handler.Key).ConfigureAwait(false);
+            }
         }
         catch (Exception e)
         {
             PluginLog.Error($"Failed to connect to mixer at {OscRemoteIpAddress}:{OscRemotePort} - {e.Message}");
+            _udpOscConnection.Dispose();
+            _udpOscConnection = null;
+            return false;
         }
+        return true;
     }
 
     private async Task<bool> DiscoverMixer()
@@ -132,10 +144,10 @@ public class Mixer: IOscClient
             var broadcastEndpoint = new IPEndPoint(IPAddress.Broadcast, OscRemotePort);
             var data = new OscMessage("/xinfo").Serialize();            
             await discoveryClient.SendAsync(data, data.Length, broadcastEndpoint).ConfigureAwait(false);
-            discoveryClient.Client.ReceiveTimeout = 2000;
 
-            // Wait for any response
-            var result = await discoveryClient.ReceiveAsync().ConfigureAwait(false);
+            // Wait for any response (ReceiveTimeout does not apply to ReceiveAsync)
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
+            var result = await discoveryClient.ReceiveAsync(timeoutCts.Token).ConfigureAwait(false);
             var remoteIp = result.RemoteEndPoint.Address.ToString();
             var responseMessage = OscMessage.Deserialize(result.Buffer);
             Name = responseMessage.Arguments[1] as string ?? "Unknown Mixer";
@@ -144,6 +156,11 @@ public class Mixer: IOscClient
             PluginLog.Info($"Successfully discovered mixer '{Name}' at {remoteIp} (Model:{Model}, FW: {FirmwareVersion})");
 
             OscRemoteIpAddress = remoteIp;
+        }
+        catch (OperationCanceledException)
+        {
+            PluginLog.Info("Mixer discovery timed out.");
+            return false;
         }
         catch (Exception e)
         {
@@ -157,21 +174,21 @@ public class Mixer: IOscClient
     public void Close()
     {
         timer?.Dispose();
-        UdpOscConnection?.Dispose();
+        _udpOscConnection?.Dispose();
     }
 
 
     public async Task Send(string address, object? value = null)
     {
-        if (UdpOscConnection == null) 
-            await ReconnectOsc().ConfigureAwait(false);
+        if (_udpOscConnection == null && !await ReconnectOsc().ConfigureAwait(false))
+            return;
 
         try
         {
             if (value == null)
-                UdpOscConnection?.Send(new OscMessage(address));
+                _udpOscConnection?.Send(new OscMessage(address));
             else
-                UdpOscConnection?.Send(new OscMessage(address, value));
+                _udpOscConnection?.Send(new OscMessage(address, value));
         }
         catch (Exception e)
         {
@@ -181,8 +198,15 @@ public class Mixer: IOscClient
 
     private readonly ConcurrentDictionary<string, EventHandler<OscMessage>> _messageHandlers = new();
 
-    public void RegisterHandler(string address, EventHandler<OscMessage> messageHandler) =>
-        _messageHandlers.AddOrUpdate(address, messageHandler, (key, existing) => existing + messageHandler);
+    public void RegisterHandler(string address, EventHandler<OscMessage> messageHandler)
+    {
+         
+        
+        // TODO: late subscribers won't benefit from the fact that existing handlers are synced once 
+        // when new connection is established? But we can't trigger sync here as it would lead to many
+        // connection attempts on startup.
+        //Send(address).Wait(); // send empty message to trigger mixer to send us the current value for this address.
+    }
 
     public void RemoveHandler(string address, EventHandler<OscMessage> messageHandler) =>
         // Annoyingly, this doesn't actually remove it from the dictionary, even if we end up with a null
