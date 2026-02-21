@@ -90,7 +90,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             newFaderLevel = 0.0f;
         }
 
-        faderObj.MainFaderLevel.Set(newFaderLevel).Wait();        
+        faderObj.MainFaderLevel.Set(newFaderLevel);        
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             return;
 
         var oldValue = channel.IsOn.Value;
-        channel.IsOn.Set(!oldValue).Wait();        
+        channel.IsOn.Set(!oldValue);        
     }
 
     // Returns the adjustment value that is shown next to the dial.

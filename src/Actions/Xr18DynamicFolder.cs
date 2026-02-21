@@ -213,7 +213,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             newMixFaderLevel = 0.0f;
         }
 
-        channel.BusSendFaderLevels[bus.Index-1].Set(newMixFaderLevel).Wait();        
+        channel.BusSendFaderLevels[bus.Index-1].Set(newMixFaderLevel);        
     }
 
     public override string GetAdjustmentValue(string actionParameter)

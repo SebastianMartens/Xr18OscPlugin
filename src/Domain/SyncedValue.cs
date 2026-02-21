@@ -28,11 +28,16 @@ public class SyncedValue<T>
         _oscClient.RegisterHandler(oscAddress, OnValueChanged);
     }
 
-    public Task Set(T value)
+    public void Set(T value)
     {
-        return typeof(T) == typeof(bool) 
-            ? _oscClient.Send(_oscAddress, value is bool v && v ? 1 : 0) 
-            : _oscClient.Send(_oscAddress, value);
+        if (typeof(T) == typeof(bool))
+        {
+            _oscClient.Send(_oscAddress, value is bool v && v ? 1 : 0);
+        }
+        else 
+        {
+        _oscClient.Send(_oscAddress, value);
+        }
     }
 
     private void OnValueChanged(object? sender, OscMessage e)

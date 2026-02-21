@@ -36,7 +36,7 @@ public class SendOscMessageIntCommand : ActionEditorCommand
         if (!actionParameter.TryGetInt32("Value", out var value))
             return false;
             
-        Xr18OscPlugin.Mixer.Send(address, value).Wait();
+        Xr18OscPlugin.Mixer.Send(address, value);
         ActionImageChanged();
         return true;
     }

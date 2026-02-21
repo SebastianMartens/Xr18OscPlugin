@@ -27,7 +27,7 @@ public class Xr18OscPlugin : Plugin
 
     public override void Unload()
     {
-        Mixer.Close();
+        Mixer.CloseConnection();
         base.Unload();
     }
 }
