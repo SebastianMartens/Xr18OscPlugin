@@ -134,7 +134,7 @@ public class Mixer: IOscClient
             return true;
 
         if (string.IsNullOrEmpty(OscRemoteIpAddress) && !await DiscoverMixer().ConfigureAwait(false))
-            return false;        
+            return false;
             
         CloseConnection();
         _udpOscConnection = new UdpOscConnection(OscRemoteIpAddress, OscRemotePort);
@@ -193,6 +193,7 @@ public class Mixer: IOscClient
         catch (OperationCanceledException)
         {
             PluginLog.Info("Mixer discovery timed out.");
+            IsConnectedChanged?.Invoke(this, true); // we only fire on failure. Success events will be triggered by the keep-alive ping.
             return false;
         }
         catch (Exception e)
