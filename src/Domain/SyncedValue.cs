@@ -53,7 +53,7 @@ public class SyncedValue<T>
         if (e.Arguments[0] is int intValue && typeof(T) == typeof(bool))
         {
             // special case: bools are sent as int (0/1)
-            Value = (T)(object)(intValue != 0);            
+            Value = (T)(object)(intValue != 0);
             ValueChanged?.Invoke(this, Value);
             return;
         }

@@ -9,4 +9,6 @@ public interface IOscClient
     void Send(string address, object? value = null);
 
     bool IsConnected { get; }
+
+    event EventHandler<bool> IsConnectedChanged;
 }

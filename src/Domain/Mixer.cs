@@ -79,6 +79,13 @@ public class Mixer: IOscClient
     public bool IsConnected => _udpOscConnection != null;
 
     /// <summary>
+    /// Event triggered when connection status to mixer changes.
+    /// TODO: this is updated correctly on initial connect and on explicist close() but
+    /// we don't update periodically or on error (there are not heartbeat messages or similar from the mixer, so we would need to implement that ourselves).
+    /// </summary>
+    public event EventHandler<bool>? IsConnectedChanged;
+
+    /// <summary>
     /// Timer used to send keep-alive pings to the mixer each few seconds.
     /// Mixer sends updates to clients only if it receives any message from the client periodically.
     /// </summary>
@@ -102,12 +109,12 @@ public class Mixer: IOscClient
     /// Behringer XAir prodcuts per default listen on port 10024.
     /// Behringer X32 Series listen on port 10023.
     /// </summary>
-    private int OscRemotePort { get; } = 10024;
-    
+    private int OscRemotePort { get; } = 10024;    
+
     private async Task InitConnection()
     {
         if (IsConnected)
-            return;        
+            return;
 
         var connected = await ReconnectOsc().ConfigureAwait(false);
         if (!connected)
@@ -137,11 +144,15 @@ public class Mixer: IOscClient
             // Setup keep alive ping to mixer
             // Do this in the background each 7 seconds.            
             keepAliveTimer = new Timer(SendKeepAlivePing, null, 0, 7000);
-            void SendKeepAlivePing(object? state) => _udpOscConnection.Send(new OscMessage("/xremote"));
+            void SendKeepAlivePing(object? state)
+            {
+                _udpOscConnection.Send(new OscMessage("/xremote"));
+                IsConnectedChanged?.Invoke(this, true); // fire even if connection status has not changed in order to update plugin status.
+            }
 
             // Setup listener to receive messages from mixer        
             _udpOscConnection.MessageReceived += HandlePacketReceived;
-            _udpOscConnection.StartReceiving();            
+            _udpOscConnection.StartReceiving();
 
             // if there are already registered handlers, then we should try to get initial values.
             // => Send empty OSC messages to mixer in order to trigger that mixer sends us current values:            
@@ -153,7 +164,7 @@ public class Mixer: IOscClient
         catch (Exception e)
         {
             PluginLog.Error($"Failed to connect to mixer at {OscRemoteIpAddress}:{OscRemotePort} - {e.Message}");
-            CloseConnection();
+            CloseConnection();            
             return false;
         }
         return true;
@@ -199,6 +210,7 @@ public class Mixer: IOscClient
         tryConnectTimer?.Dispose();
         _udpOscConnection?.Dispose();
         _udpOscConnection = null;
+        IsConnectedChanged?.Invoke(this, false);
     }
 
 
