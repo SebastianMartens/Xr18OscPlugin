@@ -15,19 +15,23 @@ internal class ConnectCommand: ActionEditorCommand
         GroupName = "Initialization";
 
         ActionEditor.AddControlEx(
-            new ActionEditorTextbox(name: "sender_ip", labelText: "Mixer Device IP")
+            new ActionEditorTextbox(name: "sender_ip", labelText: "Mixer Device IP (leave empty for auto discovery)")
             .SetPlaceholder("127.0.0.1")            
-         );
+         );                                 
     }
 
     protected override bool RunCommand(ActionEditorActionParameters actionParameters)
-    {
-        if (!actionParameters.TryGetString("sender_ip", out var sender_ip) && !string.IsNullOrEmpty(sender_ip))
+    {        
+        if (!actionParameters.TryGetString("sender_ip", out var sender_ip))
         {
             Xr18OscPlugin.Mixer.OscRemoteIpAddress = sender_ip;
         }
-            
-        Xr18OscPlugin.Mixer.ReconnectOsc().Wait();
+        PluginLog.Info($"Running Connect Command to IP: {Xr18OscPlugin.Mixer.OscRemoteIpAddress}");
+
+        Xr18OscPlugin.Mixer.ReconnectOsc(true).Wait();
         return true;
     }
+
+    // protected override string GetCommandDisplayName(ActionEditorActionParameters actionParameters) 
+    //     => $"Reconnect ({(Xr18OscPlugin.Mixer.IsConnected ? "Connected" : "Not Connected")})";
 }

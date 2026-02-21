@@ -46,6 +46,8 @@ public class Mixer: IOscClient
     public Mixer()
     {
         PluginLog.Info("Initializing Mixer domain object...");
+        InitConnection().Wait();
+
         MainLrBus = new MainLrBus(this);        
                 
         // Create regular channels 1-16
@@ -67,16 +69,14 @@ public class Mixer: IOscClient
         for (var fxIndex = 1; fxIndex <= 4; fxIndex++)
         {
             FxChannels.Add(new FxChannel(this, fxIndex));
-        }
-
-        InitConnection().Wait();
+        }        
     }
 
     #region connection Plugin <=> Mixer
 
     private UdpOscConnection? _udpOscConnection { get; set; }
 
-    bool IsConnected => _udpOscConnection != null;
+    public bool IsConnected => _udpOscConnection != null;
 
     /// <summary>
     /// Timer used to send keep-alive pings to the mixer each few seconds.
@@ -121,9 +121,9 @@ public class Mixer: IOscClient
     /// Reconnects this plugin to the mixer via OSC (Open Sound Control)
     /// We fist trigger a discovery process to find the current IP address.
     /// </summary>
-    public async Task<bool> ReconnectOsc()
+    public async Task<bool> ReconnectOsc(bool forceReconnect = false)
     {
-        if (IsConnected)
+        if (IsConnected && !forceReconnect)
             return true;
 
         if (string.IsNullOrEmpty(OscRemoteIpAddress) && !await DiscoverMixer().ConfigureAwait(false))
@@ -141,14 +141,14 @@ public class Mixer: IOscClient
 
             // Setup listener to receive messages from mixer        
             _udpOscConnection.MessageReceived += HandlePacketReceived;
-            _udpOscConnection.StartReceiving();
+            _udpOscConnection.StartReceiving();            
 
             // if there are already registered handlers, then we should try to get initial values.
-            // => Send empty OSC messages to mixer in order to trigger that mixer sends us current values:
+            // => Send empty OSC messages to mixer in order to trigger that mixer sends us current values:            
             foreach (var handler in _messageHandlers.ToList())
             {
                 Send(handler.Key);
-            }
+            }            
         }
         catch (Exception e)
         {
@@ -196,6 +196,7 @@ public class Mixer: IOscClient
     public void CloseConnection()
     {
         keepAliveTimer?.Dispose();
+        tryConnectTimer?.Dispose();
         _udpOscConnection?.Dispose();
         _udpOscConnection = null;
     }
@@ -225,8 +226,12 @@ public class Mixer: IOscClient
     {
          _messageHandlers.AddOrUpdate(address, messageHandler, (key, existing) => existing + messageHandler);
         
-        // send empty message to trigger mixer to send us the current value for this address.
-        Send(address); 
+        // send empty message to trigger mixer to send us the current value for this address.        
+        if (IsConnected)
+        {
+            Task.Delay(10).Wait(); // wait a bit. The message handler sometimes is not executed otherwise.
+            Send(address);
+        }
     }
 
     public void RemoveHandler(string address, EventHandler<OscMessage> messageHandler) =>
