@@ -38,14 +38,14 @@ public class Channel: IChannelBase
         _mixer = mixer;
         Index = index;            
       
-        Name = new SyncedValue<string>(_mixer, $"/ch/{Index:00}/config/name", "Unknown Channel");
+        Name = new SyncedValue<string>(_mixer, $"/ch/{Index:00}/config/name", $"Channel {Index:00}");
         IsOn = new SyncedValue<bool>(_mixer, $"/ch/{Index:00}/mix/on", true);
         MainFaderLevel = new SyncedValue<float>(_mixer, $"/ch/{Index:00}/mix/fader", 0.0f);
 
-        // Mixbus sends:
-        // mixbus sends will only work with channels 1..18 and Fx Return (not available for main mix)
+        // Mixbus sends: Control volume of the channel in the respective bus.
+        // Mixbus sends will only work with channels 1..18 and Fx Return (not available for main mix)
         var mixSendFaderLevelAddress = $"/ch/{Index:00}/mix/{{0}}/level";   
-        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        for (var busIndex = 1; busIndex <= Mixer.BusCount; busIndex++)
         {
             BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
         }     

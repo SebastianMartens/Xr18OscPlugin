@@ -31,7 +31,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
     /// Keep possible values in sync with Key implementation!
     /// - "" (empty - nothing selected)
     /// - "lr" (Main LR Bus)
-    /// - "Aux1".."Aux6"
+    /// - "Aux1".."AuxN" (depending on the number of aux busses supported by the mixer, e.g. Aux1..Aux6 for XR18)
     /// - "Fx Return 1".."Fx Return 4"
     /// </summary>
     private string currentMixBus = "";

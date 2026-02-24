@@ -43,6 +43,13 @@ public class Mixer: IOscClient
     /// </summary>
     public List<AuxBus> Busses { get; } = new ();
 
+    /// <summary>
+    /// XR18 has 6 aux busses (Aux1..Aux6) that are usually used for monitor mixes or IEMs.
+    /// XR12 has two aux busses (Aux1..Aux2).
+    /// XR16 has 4 aux busses (Aux1..Aux4).
+    /// </summary>
+    public const int BusCount = 6;
+
     public Mixer()
     {
         PluginLog.Info("Initializing Mixer domain object...");
@@ -58,8 +65,8 @@ public class Mixer: IOscClient
             Channels.Add(new Channel(this, channelIndex));
         }
 
-        // Mixbusses Aux1..Aux5
-        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        // Mixbusses Aux1..Aux6
+        for (var busIndex = 1; busIndex <= BusCount; busIndex++)
         {
             Busses.Add(new AuxBus(this, busIndex));
         }

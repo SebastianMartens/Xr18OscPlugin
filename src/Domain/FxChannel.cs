@@ -42,7 +42,7 @@ public class FxChannel: IChannelBase
         // Mixbus sends
         // index is without leading 0 here! Channel index WITH leading 0!
         var mixSendFaderLevelAddress = $"/rtn/{Index}/mix/{{0}}/level";
-        for (var busIndex = 1; busIndex <= 6; busIndex++)
+        for (var busIndex = 1; busIndex <= Mixer.BusCount; busIndex++)
         {
             BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
         }
@@ -64,5 +64,5 @@ public class FxChannel: IChannelBase
     
     public SyncedValue<float> MainFaderLevel { get; }
 
-    public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[6]; // bus index (caution, array index is 0-based!)
+    public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[Mixer.BusCount]; // bus index (caution, array index is 0-based!)
 }

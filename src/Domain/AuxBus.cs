@@ -3,7 +3,7 @@ namespace Loupedeck.Xr18OscPlugin.Domain;
 using global::Xr18OscPlugin.Domain;
 
 /// <summary>
-/// Represents a single auxiliary bus (monitor bus 1..6) on the mixer.
+/// Represents a single auxiliary bus (XR18: monitor bus 1..6) on the mixer.
 /// </summary>
 public class AuxBus
 {
@@ -25,7 +25,7 @@ public class AuxBus
     }
 
     /// <summary>
-    /// XR18 has six mix-busses numbered 1-6.
+    /// XR18 has six mix-busses numbered 1-6. Other models might be different.
     /// </summary>
     public int Index { get; }
     
