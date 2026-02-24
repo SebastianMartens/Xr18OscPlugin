@@ -10,7 +10,7 @@ using global::Xr18OscPlugin.Domain;
 /// - Name
 /// - On/Off (mute)
 /// - Fader level
-/// - Bus sends (Aux 1-6)
+/// - Bus sends (Aux 1-n)
 /// 
 /// Not yet implemented:
 /// - Metering

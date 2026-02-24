@@ -9,10 +9,9 @@ using SharpOSC;
 
 /// <summary>
 /// Represents a Behringer XR18 digital mixer.
-/// 
 /// - it knows about all sub-components like channels and buses (those reflect the behavior of the mixer)
 /// - has only as few own logic as necessary
-/// - handles communication with the mixer via OSC (Open Sound Control)
+/// - handles communication with the mixer via OSC (Open Sound Control; IOscClient interface)
 /// </summary>
 public class Mixer: IOscClient
 {
@@ -32,6 +31,11 @@ public class Mixer: IOscClient
     /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips.
     /// </summary>
     public List<Channel> Channels { get; } = new ();
+
+    /// <summary>
+    /// TODO: read ch count or derive from mixer model.
+    /// </summary>
+    public int ChannelCount = 18;
 
     /// <summary>
     /// Similar to input channels, but control the fx return channels. 
@@ -57,10 +61,10 @@ public class Mixer: IOscClient
 
         MainLrBus = new MainLrBus(this);        
                 
-        // Create regular channels 1-16
+        // CR18: Create regular channels 1-16
         // Channels 17/18 are Line Inputs and usually used for USB return but can be 
         // configured as regular channels as well
-        for (var channelIndex = 1; channelIndex <= 18; channelIndex++)
+        for (var channelIndex = 1; channelIndex <= ChannelCount; channelIndex++)
         {
             Channels.Add(new Channel(this, channelIndex));
         }
