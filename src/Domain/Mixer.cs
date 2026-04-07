@@ -33,9 +33,16 @@ public class Mixer: IOscClient
     public List<Channel> Channels { get; } = new ();
 
     /// <summary>
-    /// TODO: read ch count or derive from mixer model.
+    /// Number of input channels, derived from the mixer model.
+    /// XR18 = 18, XR16 = 16, XR12 = 12. Defaults to 18 if the model is unknown.
     /// </summary>
-    public int ChannelCount = 18;
+    public int ChannelCount => Model switch
+    {
+        string m when m.Contains("XR12", StringComparison.OrdinalIgnoreCase) => 12,
+        string m when m.Contains("XR16", StringComparison.OrdinalIgnoreCase) => 16,
+        string m when m.Contains("XR18", StringComparison.OrdinalIgnoreCase) => 18,
+        _ => 18
+    };
 
     /// <summary>
     /// Similar to input channels, but control the fx return channels. 

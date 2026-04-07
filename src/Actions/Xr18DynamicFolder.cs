@@ -1,7 +1,6 @@
 namespace Loupedeck.Xr18OscPlugin.Actions;
 
 using System.Collections.Generic;
-using Loupedeck.Xr18OscPlugin.Domain;
 
 /// <summary>
 /// Dynamic folder for adjusting mix bus send levels for channels.
