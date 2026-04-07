@@ -1,12 +1,13 @@
 namespace Loupedeck.Xr18OscPlugin.Tests.Domain;
 
 using Loupedeck.Xr18OscPlugin.Domain;
-using NSubstitute;
+using Moq;
 using SharpOSC;
 
 public class FxChannelTests
 {
-    private readonly IOscClient _oscClient = Substitute.For<IOscClient>();
+    private readonly Mock<IOscClient> _oscClientMock = new();
+    private IOscClient _oscClient => _oscClientMock.Object;
 
     [Fact]
     public void FxChannel_Key_FormatsCorrectly()
@@ -34,9 +35,9 @@ public class FxChannelTests
     {
         _ = new FxChannel(_oscClient, 2);
 
-        _oscClient.Received().RegisterHandler("/rtn/2/config/name", Arg.Any<EventHandler<OscMessage>>());
-        _oscClient.Received().RegisterHandler("/rtn/2/mix/on", Arg.Any<EventHandler<OscMessage>>());
-        _oscClient.Received().RegisterHandler("/rtn/2/mix/fader", Arg.Any<EventHandler<OscMessage>>());
+        _oscClientMock.Verify(x => x.RegisterHandler("/rtn/2/config/name", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
+        _oscClientMock.Verify(x => x.RegisterHandler("/rtn/2/mix/on", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
+        _oscClientMock.Verify(x => x.RegisterHandler("/rtn/2/mix/fader", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public class FxChannelTests
 
         for (var bus = 1; bus <= 6; bus++)
         {
-            _oscClient.Received().RegisterHandler($"/rtn/1/mix/{bus:00}/level", Arg.Any<EventHandler<OscMessage>>());
+            _oscClientMock.Verify(x => x.RegisterHandler($"/rtn/1/mix/{bus:00}/level", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
         }
     }
 }
