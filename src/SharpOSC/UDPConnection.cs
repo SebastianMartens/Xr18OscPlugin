@@ -25,8 +25,8 @@ public class UdpOscConnection(string remoteAddress, int remotePort, int localPor
     public event Action<OscMessage>? MessageReceived;
 
     public void Send(OscMessage message)
-    {
-        var data = message.Serialize();
+    {        
+        var data = message.Serialize();        
         try
         {
             _udpClient.Send(data, data.Length, _remoteEndPoint);            
@@ -73,7 +73,7 @@ public class UdpOscConnection(string remoteAddress, int remotePort, int localPor
         GC.SuppressFinalize(this);
         isListening = false;
         _udpClient?.Close();
-        _udpClient?.Dispose();
+        _udpClient?.Dispose();        
     }
     
 }

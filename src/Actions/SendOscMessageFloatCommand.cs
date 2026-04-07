@@ -36,7 +36,7 @@ public class SendOscMessageFloatCommand : ActionEditorCommand
         if (!float.TryParse(value, out var floatValue))
             return false;
             
-        Xr18OscPlugin.Mixer.Send(address, floatValue).Wait();
+        Xr18OscPlugin.Mixer.Send(address, floatValue);
         ActionImageChanged();
         return true;
     }

@@ -21,13 +21,27 @@ public class Xr18OscPlugin : Plugin
     {
         PluginLog.Init(Log);
         PluginResources.Init(Assembly);
+        
+        Mixer.IsConnectedChanged += (sender, isConnected) => UpdateStatus();
+    }
+
+    public void UpdateStatus()
+    {
+        if (Mixer.IsConnected)
+        {
+            OnPluginStatusChanged(Loupedeck.PluginStatus.Disabled, $"Connected to mixer: {Mixer.Name} (Model: {Mixer.Model}, FW: {Mixer.FirmwareVersion}) at IP Address {Mixer.OscRemoteIpAddress}.", null, null);
+        }
+        else
+        {
+            OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, "Could not find mixer. Please ensure the mixer is powered on and connected to the network. Use Connect button action to connect to mixers if broadcasts are not allowed in your network.", null, null);
+        }
     }
 
     public override void Load() => base.Load();
 
     public override void Unload()
     {
-        Mixer.Close();
+        Mixer.CloseConnection();
         base.Unload();
     }
 }
