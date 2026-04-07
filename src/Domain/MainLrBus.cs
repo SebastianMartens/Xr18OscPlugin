@@ -29,4 +29,8 @@ public class MainLrBus: IChannelBase
     public SyncedValue<float> MainFaderLevel { get; }
 
     public SyncedValue<float> Pan { get; }
+
+    public float MeterValue { get; private set; }
+
+    public event EventHandler<float>? MeterValueUpdated;
 }

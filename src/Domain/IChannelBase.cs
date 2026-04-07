@@ -21,4 +21,14 @@ public interface IChannelBase
     /// For input channels, this is just the main fader level of the channel.
     /// </summary>
     public SyncedValue<float> MainFaderLevel { get; }
+
+    /// <summary>
+    /// Current meter value (live volume level) received from the mixer.
+    /// </summary>
+    public float MeterValue { get; }
+
+    /// <summary>
+    /// Raised whenever a new meter value is received from the mixer.
+    /// </summary>
+    public event EventHandler<float>? MeterValueUpdated;
 }

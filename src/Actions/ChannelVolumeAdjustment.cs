@@ -1,6 +1,7 @@
 namespace Loupedeck.Xr18OscPlugin.Actions;
 
 using Loupedeck.Xr18OscPlugin.Domain;
+using global::Xr18OscPlugin.Helpers;
 
 /// <summary>
 /// Control main mix volume of individual channels on the mixer.
@@ -25,7 +26,8 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             channel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
             channel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
-            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);            
+            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
+            channel.MeterValueUpdated += (s, e) => AdjustmentValueChanged(channel.Key);
         }
 
 
@@ -42,7 +44,8 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             fxChannel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);
             fxChannel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);
-            fxChannel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);            
+            fxChannel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(fxChannel.Key);
+            fxChannel.MeterValueUpdated += (s, e) => AdjustmentValueChanged(fxChannel.Key);
         }
         
 
@@ -56,6 +59,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         mainLrBus.Name.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
         mainLrBus.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
         mainLrBus.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus.MeterValueUpdated += (s, e) => AdjustmentValueChanged("lr");
     }
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
@@ -116,24 +120,26 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         channel.IsOn.Set(!oldValue);        
     }
 
-    // Returns the adjustment value that is shown next to the dial.
     protected override string GetAdjustmentValue(string actionParameter)
     {
+        IChannelBase? channel = null;
+
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+            channel = Xr18OscPlugin.Mixer.MainLrBus;
+        else if (actionParameter.StartsWith("Fx"))
+            channel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
+        else
+            channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
 
-        if (actionParameter.StartsWith("Fx"))
-        {
-            var fxChannel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
-            if (fxChannel != null)
-                return fxChannel.IsOn.Value ? fxChannel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
-        }
-        
-        var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
-        if (channel != null)
-            return channel.IsOn.Value ? channel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+        if (channel == null)
+            return "";
 
-        return "";
+        if (!channel.IsOn.Value)
+            return "MUTE";
+
+        var faderText = channel.MainFaderLevel.Value.ToString("#.00");
+        var meterBar = MeterDisplayFormatter.FormatMeterBar(channel.MeterValue);
+        return $"{faderText}\n{meterBar}";
     }
 
     protected override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)

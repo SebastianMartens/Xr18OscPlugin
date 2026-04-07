@@ -65,4 +65,8 @@ public class FxChannel: IChannelBase
     public SyncedValue<float> MainFaderLevel { get; }
 
     public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[Mixer.BusCount]; // bus index (caution, array index is 0-based!)
+
+    public float MeterValue { get; private set; }
+
+    public event EventHandler<float>? MeterValueUpdated;
 }

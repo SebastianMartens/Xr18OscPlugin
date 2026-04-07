@@ -1,6 +1,7 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
 using global::Xr18OscPlugin.Helpers;
+using SharpOSC;
 
 /// <summary>
 /// Represents a single channel on the mixer. 
@@ -24,9 +25,8 @@ using global::Xr18OscPlugin.Helpers;
 public class Channel: IChannelBase
 {
     private readonly IOscClient _mixer;
-    // private readonly string _outputMeterAddress; // not finished, yet
-    // private readonly int _meterIndex;// not finished, yet
-    // private readonly int? _meterIndex2;// not finished, yet
+    private readonly string _outputMeterAddress;
+    private readonly int _meterIndex;
 
     /// <summary>
     /// Creates a new channel instance for the given mixer and channel index.
@@ -50,11 +50,28 @@ public class Channel: IChannelBase
             BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
         }     
             
-        // TODO: implement meter handling
-        // _outputMeterAddress = $"/meters/1";
-        // _meterIndex = Index - 1;
-        // _meterIndex2 = stereo ? Index : default(int?);
-    }    
+        // Meter handling: /meters/1 sends a blob of Int16 values, one per channel
+        _outputMeterAddress = "/meters/1";
+        _meterIndex = Index - 1;
+        _mixer.RegisterHandler(_outputMeterAddress, HandleMeterMessage);
+    }
+
+    private void HandleMeterMessage(object? sender, OscMessage message)
+    {
+        if (message.Arguments.Length == 0 || message.Arguments[0] is not byte[] blob)
+            return;
+
+        // Blob contains little-endian Int16 values; each meter value is 2 bytes
+        var byteIndex = _meterIndex * 2;
+        if (byteIndex + 1 >= blob.Length)
+            return;
+
+        var rawValue = BitConverter.ToInt16(blob, byteIndex);
+        var meterValue = rawValue / 256.0f;
+
+        MeterValue = meterValue;
+        MeterValueUpdated?.Invoke(this, meterValue);
+    }
 
     public int Index { get; }
 
@@ -67,4 +84,8 @@ public class Channel: IChannelBase
     public SyncedValue<float> MainFaderLevel { get; }
 
     public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[6]; // bus index (caution, array index is 0-based!)
+
+    public float MeterValue { get; private set; }
+
+    public event EventHandler<float>? MeterValueUpdated;
 }
