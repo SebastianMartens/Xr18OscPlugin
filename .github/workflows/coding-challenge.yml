@@ -1,0 +1,19 @@
+name: Coding Challenge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/bartsCodingChallenges.md'
+
+jobs:
+  solve-challenge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copilot Coding Agent
+        uses: github/copilot-coding-agent@v1
+        with:
+          prompt: |
+            Look at .github/bartsCodingChallenges.md and pick the first unchecked task.
+            Implement it following project conventions, write unit tests, build and run them.
+            If blocked, leave a note in the file describing what's missing.
