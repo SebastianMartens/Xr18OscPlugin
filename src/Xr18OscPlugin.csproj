@@ -26,6 +26,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Xr18OscPlugin.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- <Reference Include="PluginApi">
       <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
     </Reference> -->
