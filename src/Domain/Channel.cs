@@ -23,7 +23,7 @@ using global::Xr18OscPlugin.Domain;
 /// </summary>
 public class Channel: IChannelBase
 {
-    private readonly Mixer _mixer;
+    private readonly IOscClient _mixer;
     // private readonly string _outputMeterAddress; // not finished, yet
     // private readonly int _meterIndex;// not finished, yet
     // private readonly int? _meterIndex2;// not finished, yet
@@ -33,7 +33,7 @@ public class Channel: IChannelBase
     /// </summary>
     /// <param name="mixer"></param>
     /// <param name="index">Channel index 1..18 (1-based)</param>
-    public Channel(Mixer mixer, int index)
+    public Channel(IOscClient mixer, int index)
     {
         _mixer = mixer;
         Index = index;            

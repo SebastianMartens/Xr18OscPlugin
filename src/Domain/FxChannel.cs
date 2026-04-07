@@ -22,7 +22,7 @@ using global::Xr18OscPlugin.Domain;
 /// </summary>
 public class FxChannel: IChannelBase
 {
-    private readonly Mixer _mixer;
+    private readonly IOscClient _mixer;
 
     // private readonly string _outputMeterAddress; // not finished, yet
     // private readonly int _meterIndex;// not finished, yet
@@ -30,7 +30,7 @@ public class FxChannel: IChannelBase
 
     public int Index { get; }
 
-    public FxChannel(Mixer mixer, int index)
+    public FxChannel(IOscClient mixer, int index)
     {         
         _mixer = mixer;
         Index = index;

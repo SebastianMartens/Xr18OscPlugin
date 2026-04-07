@@ -7,7 +7,7 @@ using global::Xr18OscPlugin.Domain;
 /// </summary>
 public class AuxBus
 {
-    private Mixer _mixer { get; }
+    private IOscClient _mixer { get; }
         
     /// <summary>
     /// The key to identify this bus (e.g. "Aux1", "Aux2", .. "Aux6").
@@ -16,7 +16,7 @@ public class AuxBus
     /// </summary>
     public string Key => $"Aux{Index}";
 
-    public AuxBus(Mixer mixer, int index)
+    public AuxBus(IOscClient mixer, int index)
     {
         _mixer = mixer;
         Index = index;

@@ -7,9 +7,9 @@ using global::Xr18OscPlugin.Domain;
 /// </summary>
 public class MainLrBus: IChannelBase
 {    
-    private Mixer _mixer { get; }
+    private IOscClient _mixer { get; }
 
-    public MainLrBus(Mixer mixer)
+    public MainLrBus(IOscClient mixer)
     {
         _mixer = mixer;
         
