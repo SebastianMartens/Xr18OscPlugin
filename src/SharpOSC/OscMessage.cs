@@ -6,6 +6,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
+/// <summary>
+/// Represents a single OSC message with an address pattern and typed arguments.
+/// </summary>
 public class OscMessage : IOscPacket
 {
     public readonly string Address;

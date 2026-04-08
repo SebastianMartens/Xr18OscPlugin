@@ -5,10 +5,10 @@ namespace Loupedeck.Xr18OscPlugin;
 using System.IO;
 using System.Reflection;
 
-// A helper class for managing plugin resources.
-// Note that the resource files handled by this class must be embedded in the plugin assembly at compile time.
-// That is, the Build Action of the files must be "Embedded Resource" in the plugin project.
-
+/// <summary>
+/// Helper for accessing embedded resources from the plugin assembly.
+/// Resource files must have Build Action set to "Embedded Resource" at compile time.
+/// </summary>
 internal static class PluginResources
 {
     private static Assembly _assembly;

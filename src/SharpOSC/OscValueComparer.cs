@@ -6,6 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 
+/// <summary>
+/// Equality comparer for OSC argument values, supporting numeric types, strings, byte arrays, and vectors
+/// with a configurable threshold for floating-point comparison.
+/// </summary>
 public class OscValueComparer : IEqualityComparer<object?>
 {
     const float VectorEqualityThreshold = 0.01f;

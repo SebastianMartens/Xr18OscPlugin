@@ -1,5 +1,9 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
+/// <summary>
+/// Provides conversion methods between dB levels and linear (0–1) fader values
+/// used for display and OSC communication with the mixer.
+/// </summary>
 internal static class LevelConversions
 {
     /// <summary>

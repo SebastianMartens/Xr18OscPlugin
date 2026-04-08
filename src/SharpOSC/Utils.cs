@@ -1,5 +1,8 @@
 ﻿namespace SharpOSC;
 
+/// <summary>
+/// Utility methods for OSC protocol operations such as string alignment and padding.
+/// </summary>
 public class Utils
 {
     public static int AlignedStringLength(string value)

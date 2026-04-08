@@ -14,12 +14,9 @@ using SharpOSC;
 /// - Bus sends (Aux 1-n)
 /// 
 /// Not yet implemented:
-/// - Metering
 /// - Panning
-/// - Solo
 /// - EQ
 /// - Dynamics
-/// - Fx Sends
 /// - ...
 /// </summary>
 public class Channel: IChannelBase

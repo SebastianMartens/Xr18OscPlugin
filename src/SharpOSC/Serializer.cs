@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+/// <summary>
+/// Serializes typed values into OSC-formatted byte sequences for network transmission.
+/// </summary>
 public static class Serializer
 {
     static void AddPadding(int size, List<byte> buffer)

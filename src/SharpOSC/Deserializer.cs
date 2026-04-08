@@ -3,6 +3,9 @@ namespace SharpOSC;
 using System;
 using System.Text;
 
+/// <summary>
+/// Deserializes raw OSC byte data into typed values such as addresses, ints, floats, strings, and blobs.
+/// </summary>
 public static class Deserializer
 {
     public static string GetAddress(ReadOnlySpan<byte> buffer, int index)

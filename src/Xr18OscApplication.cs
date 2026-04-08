@@ -1,7 +1,9 @@
 namespace Loupedeck.Xr18OscPlugin;
 
-// This class can be used to connect the Loupedeck plugin to an application.
-
+/// <summary>
+/// Loupedeck application descriptor for the XR18 OSC plugin.
+/// Currently unused since the plugin operates in API-only mode without binding to a specific application.
+/// </summary>
 public class Xr18OscApplication : ClientApplication
 {
     public Xr18OscApplication()

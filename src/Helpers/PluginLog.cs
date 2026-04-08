@@ -2,8 +2,10 @@ namespace Loupedeck.Xr18OscPlugin;
 
 using System;
 
-// A helper class that enables logging from the plugin code.
-
+/// <summary>
+/// Centralized logging helper that prefixes all messages with the plugin name
+/// and delegates to the Loupedeck plugin log infrastructure.
+/// </summary>
 internal static class PluginLog
 {
     private static PluginLogFile? _pluginLogFile;

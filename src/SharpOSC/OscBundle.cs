@@ -6,6 +6,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
+/// <summary>
+/// Represents an OSC bundle containing a timetag and a collection of OSC messages.
+/// </summary>
 public class OscBundle : IOscPacket
 {
     readonly Timetag Timetag;
