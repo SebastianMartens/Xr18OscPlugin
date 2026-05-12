@@ -41,6 +41,7 @@ public class Channel: IChannelBase
         Name = new SyncedValue<string>(_mixer, $"/ch/{Index:00}/config/name", $"Channel {Index:00}");
         IsOn = new SyncedValue<bool>(_mixer, $"/ch/{Index:00}/mix/on", true);
         MainFaderLevel = new SyncedValue<float>(_mixer, $"/ch/{Index:00}/mix/fader", 0.0f);
+        Color = new SyncedValue<int>(_mixer, $"/ch/{Index:00}/config/color", 0);
 
         // Mixbus sends: Control volume of the channel in the respective bus.
         // Mixbus sends will only work with channels 1..18 and Fx Return (not available for main mix)
@@ -65,6 +66,12 @@ public class Channel: IChannelBase
     public SyncedValue<bool> IsOn { get; }
     
     public SyncedValue<float> MainFaderLevel { get; }
+
+    /// <summary>
+    /// Channel color as configured in the mixer UI. Integer value 0–7:
+    /// 0=OFF, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=MAGENTA, 6=CYAN, 7=WHITE.
+    /// </summary>
+    public SyncedValue<int> Color { get; }
 
     public SyncedValue<float>[] BusSendFaderLevels = new SyncedValue<float>[6]; // bus index (caution, array index is 0-based!)
 }

@@ -73,4 +73,18 @@ public class ChannelTests
             _oscClientMock.Verify(x => x.RegisterHandler($"/ch/02/mix/{bus:00}/level", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
         }
     }
+
+    [Fact]
+    public void Channel_DefaultColor_IsZero()
+    {
+        var channel = new Channel(_oscClient, 1);
+        Assert.Equal(0, channel.Color.Value);
+    }
+
+    [Fact]
+    public void Channel_Color_RegistersCorrectOscAddress()
+    {
+        _ = new Channel(_oscClient, 5);
+        _oscClientMock.Verify(x => x.RegisterHandler("/ch/05/config/color", It.IsAny<EventHandler<OscMessage>>()), Times.Once);
+    }
 }

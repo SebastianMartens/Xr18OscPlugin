@@ -25,7 +25,8 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             channel.Name.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
             channel.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
-            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);            
+            channel.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
+            channel.Color.ValueChanged += (s, e) => AdjustmentValueChanged(channel.Key);
         }
 
 
@@ -151,4 +152,55 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
 
         return actionParameter;
     }
+
+    protected override BitmapImage GetAdjustmentImage(string actionParameter, PluginImageSize imageSize)
+    {
+        // Only render with a color background for regular input channels (Ch 01-18).
+        // FX channels and Main LR fall back to the framework's default text rendering.
+        var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
+        if (channel == null)
+            return base.GetAdjustmentImage(actionParameter, imageSize);
+
+        var bgColor = MixerColorToBitmapColor(channel.Color.Value);
+        var fgColor = IsColorBright(bgColor) ? BitmapColor.Black : BitmapColor.White;
+
+        using var builder = new BitmapBuilder(imageSize);
+        builder.Clear(bgColor);
+        builder.DrawText(
+            channel.Name.Value ?? channel.Key,
+            0, 0, builder.Width, builder.Height / 2,
+            fgColor, 14, 14, 2, null);
+
+        var value = channel.IsOn.Value
+            ? channel.MainFaderLevel.Value.ToString("#.00")
+            : "MUTE";
+        builder.DrawText(
+            value,
+            0, builder.Height / 2, builder.Width, builder.Height / 2,
+            fgColor, 14, 14, 2, null);
+
+        return builder.ToImage();
+    }
+
+    /// <summary>
+    /// Maps a Behringer XR18 channel color index (0–7) to a <see cref="BitmapColor"/>.
+    /// 0=OFF, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=MAGENTA, 6=CYAN, 7=WHITE.
+    /// </summary>
+    private static BitmapColor MixerColorToBitmapColor(int colorIndex) => colorIndex switch
+    {
+        1 => new BitmapColor(200, 50,  50),   // RED
+        2 => new BitmapColor(50,  200, 50),   // GREEN
+        3 => new BitmapColor(200, 200, 50),   // YELLOW
+        4 => new BitmapColor(50,  50,  200),  // BLUE
+        5 => new BitmapColor(200, 50,  200),  // MAGENTA
+        6 => new BitmapColor(50,  200, 200),  // CYAN
+        7 => new BitmapColor(220, 220, 220),  // WHITE
+        _ => BitmapColor.Black,               // OFF or unknown
+    };
+
+    /// <summary>
+    /// Returns true if the color is bright enough that black text will be legible on it.
+    /// </summary>
+    private static bool IsColorBright(BitmapColor color) =>
+        (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) > 128;
 }
