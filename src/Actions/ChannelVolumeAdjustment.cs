@@ -183,19 +183,29 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     }
 
     /// <summary>
-    /// Maps a Behringer XR18 channel color index (0–7) to a <see cref="BitmapColor"/>.
-    /// 0=OFF, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=MAGENTA, 6=CYAN, 7=WHITE.
+    /// Maps a Behringer XR18 channel color index (0–15) to a <see cref="BitmapColor"/>.
+    /// 0=OFF, 1=RD, 2=GN, 3=YE, 4=BL, 5=MG, 6=CY, 7=WH,
+    /// 8=OFFi, 9=RDi, 10=GNi, 11=YEi, 12=BLi, 13=MGi, 14=CYi, 15=WHi
+    /// (where "i" = inverted/bright variant).
     /// </summary>
     private static BitmapColor MixerColorToBitmapColor(int colorIndex) => colorIndex switch
     {
-        1 => new BitmapColor(200, 50,  50),   // RED
-        2 => new BitmapColor(50,  200, 50),   // GREEN
-        3 => new BitmapColor(200, 200, 50),   // YELLOW
-        4 => new BitmapColor(50,  50,  200),  // BLUE
-        5 => new BitmapColor(200, 50,  200),  // MAGENTA
-        6 => new BitmapColor(50,  200, 200),  // CYAN
-        7 => new BitmapColor(220, 220, 220),  // WHITE
-        _ => BitmapColor.Black,               // OFF or unknown
+        1  => new BitmapColor(180, 40,  40),   // RD
+        2  => new BitmapColor(40,  180, 40),   // GN
+        3  => new BitmapColor(180, 180, 40),   // YE
+        4  => new BitmapColor(40,  40,  180),  // BL
+        5  => new BitmapColor(180, 40,  180),  // MG
+        6  => new BitmapColor(40,  180, 180),  // CY
+        7  => new BitmapColor(200, 200, 200),  // WH
+        8  => BitmapColor.Black,               // OFFi (inverted off = same as off)
+        9  => new BitmapColor(255, 120, 120),  // RDi
+        10 => new BitmapColor(120, 255, 120),  // GNi
+        11 => new BitmapColor(255, 255, 120),  // YEi
+        12 => new BitmapColor(120, 120, 255),  // BLi
+        13 => new BitmapColor(255, 120, 255),  // MGi
+        14 => new BitmapColor(120, 255, 255),  // CYi
+        15 => BitmapColor.White,               // WHi
+        _  => BitmapColor.Black,               // 0=OFF or unknown
     };
 
     /// <summary>

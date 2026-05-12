@@ -68,8 +68,10 @@ public class Channel: IChannelBase
     public SyncedValue<float> MainFaderLevel { get; }
 
     /// <summary>
-    /// Channel color as configured in the mixer UI. Integer value 0–7:
-    /// 0=OFF, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=MAGENTA, 6=CYAN, 7=WHITE.
+    /// Channel color as configured in the mixer UI. Integer value 0–15:
+    /// 0=OFF, 1=RD, 2=GN, 3=YE, 4=BL, 5=MG, 6=CY, 7=WH,
+    /// 8=OFFi, 9=RDi, 10=GNi, 11=YEi, 12=BLi, 13=MGi, 14=CYi, 15=WHi
+    /// (where "i" = inverted/bright variant).
     /// </summary>
     public SyncedValue<int> Color { get; }
 
