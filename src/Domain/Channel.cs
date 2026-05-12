@@ -47,10 +47,13 @@ public class Channel: IChannelBase
             BusSendFaderLevels[busIndex - 1] = new SyncedValue<float>(_mixer, string.Format(mixSendFaderLevelAddress, $"{busIndex:00}"), 0.0f);    
         }     
             
-        // Meter handling: /meters/1 sends a blob of Int16 values, one per channel
+        // Meter handling: /meters/1 sends a blob of Int16 values, one per channel.
+        // XAir requires sending the address with int argument 0 to subscribe to periodic meter pushes.
+        // RegisterHandler only sends an empty query (fine for regular params), so we subscribe explicitly after.
         _outputMeterAddress = "/meters/1";
         _meterIndex = Index - 1;
         _mixer.RegisterHandler(_outputMeterAddress, HandleMeterMessage);
+        _mixer.Send(_outputMeterAddress, 1);
     }
 
     private void HandleMeterMessage(object? sender, OscMessage message)
