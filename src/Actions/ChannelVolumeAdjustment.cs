@@ -118,6 +118,8 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     }
 
     // Returns the adjustment value that is shown next to the dial.
+    // For regular input channels the value is embedded in the custom BitmapImage, so return
+    // an empty string to suppress the duplicate label rendered by the framework.
     protected override string GetAdjustmentValue(string actionParameter)
     {
         if (actionParameter == "lr")
@@ -129,10 +131,11 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             if (fxChannel != null)
                 return fxChannel.IsOn.Value ? fxChannel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
         }
-        
+
+        // Regular input channels render name + value inside GetAdjustmentImage; suppress the extra label.
         var channel = Xr18OscPlugin.Mixer.Channels.SingleOrDefault(x => x.Key == actionParameter);
         if (channel != null)
-            return channel.IsOn.Value ? channel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+            return string.Empty;
 
         return "";
     }
