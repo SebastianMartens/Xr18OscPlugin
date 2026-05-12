@@ -24,9 +24,8 @@ internal static class LevelConversions
         return scaled / 600.0;
 
         // The code above is adapted from John Skeet's original implementation for XR18.
-        // The code below is for X32.
-        // TODO: both are not in use right now and need to be verified.
-
+        // The code below is for X32 but needs to be verified
+        
         // var scaledX32 = db switch
         // {
         //     < -60 => (db + 90) / 480,
@@ -59,4 +58,10 @@ internal static class LevelConversions
             _ => throw new ArgumentOutOfRangeException(nameof(volFloat), "Volume float must be in range 0.0 to 1.0"),
         };
     }
+
+    /// <summary>
+    /// Converts a linear fader level (0.0–1.0) to a formatted dB string, e.g. "+0.0 dB" or "-10.5 dB".
+    /// </summary>
+    public static string FormatLevel(float volFloat) =>
+        $"{LevelConversions.LevelLinearToDb(volFloat):+0.0;-0.0;0.0} dB";
 }

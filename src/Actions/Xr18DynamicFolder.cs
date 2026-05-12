@@ -224,6 +224,7 @@ public class Xr18DynamicFolder : PluginDynamicFolder
             return "";
 
         var bus = Xr18OscPlugin.Mixer.Busses.Single(x => x.Key == currentMixBus);
-        return Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter).BusSendFaderLevels[bus.Index-1].Value.ToString("P0");
+        var channel = Xr18OscPlugin.Mixer.Channels.Single(x => x.Key == actionParameter);
+        return LevelConversions.FormatLevel(channel.BusSendFaderLevels[bus.Index-1].Value);
     }
 }
