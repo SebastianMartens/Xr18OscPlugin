@@ -22,7 +22,7 @@ public class UdpOscConnection(string remoteAddress, int remotePort, int localPor
     
     private bool isListening;
 
-    public event Action<OscMessage>? MessageReceived;
+    public event Action<IOscPacket>? MessageReceived;
 
     public void Send(OscMessage message)
     {        
@@ -51,8 +51,8 @@ public class UdpOscConnection(string remoteAddress, int remotePort, int localPor
                 try
                 {
                     var result = await _udpClient.ReceiveAsync().ConfigureAwait(false);
-                    var oscMsg = OscMessage.Deserialize(result.Buffer);
-                    MessageReceived?.Invoke(oscMsg);
+                    var packet = IOscPacket.Deserialize(result.Buffer);
+                    MessageReceived?.Invoke(packet);
                 }
                 catch (ObjectDisposedException)
                 {
