@@ -62,6 +62,10 @@ public class UdpOscConnection(string remoteAddress, int remotePort, int localPor
                 {
                     PluginLog.Error($"SocketException occurred while receiving OSC data.");
                 }
+                catch (Exception ex)
+                {
+                    PluginLog.Error($"Unexpected error in OSC receive loop: {ex.Message}");
+                }
             }
         });
     }
