@@ -13,5 +13,5 @@ public interface IOscPacket
             : OscMessage.Deserialize(buffer);
     }
 
-    public abstract byte[] Serialize();
+    public byte[] Serialize();
 }

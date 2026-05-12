@@ -31,13 +31,9 @@ public class SyncedValue<T>
     public void Set(T value)
     {
         if (typeof(T) == typeof(bool))
-        {
             _oscClient.Send(_oscAddress, value is bool v && v ? 1 : 0);
-        }
-        else 
-        {
-        _oscClient.Send(_oscAddress, value);
-        }
+        else
+            _oscClient.Send(_oscAddress, value);
     }
 
     private void OnValueChanged(object? sender, OscMessage e)
