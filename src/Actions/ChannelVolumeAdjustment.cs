@@ -123,13 +123,13 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     protected override string GetAdjustmentValue(string actionParameter)
     {
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? LevelConversions.FormatLevel(Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value) : "MUTE";
 
         if (actionParameter.StartsWith("Fx"))
         {
             var fxChannel = Xr18OscPlugin.Mixer.FxChannels.SingleOrDefault(x => x.Key == actionParameter);
             if (fxChannel != null)
-                return fxChannel.IsOn.Value ? fxChannel.MainFaderLevel.Value.ToString("#.00") : "MUTE";
+                return fxChannel.IsOn.Value ? LevelConversions.FormatLevel(fxChannel.MainFaderLevel.Value) : "MUTE";
         }
 
         // Regular input channels render name + value inside GetAdjustmentImage; suppress the extra label.
@@ -175,7 +175,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             fgColor, 14, 14, 2, null);
 
         var value = channel.IsOn.Value
-            ? channel.MainFaderLevel.Value.ToString("#.00")
+            ? LevelConversions.FormatLevel(channel.MainFaderLevel.Value)
             : "MUTE";
         builder.DrawText(
             value,
@@ -214,6 +214,5 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     /// <summary>
     /// Returns true if the color is bright enough that black text will be legible on it.
     /// </summary>
-    private static bool IsColorBright(BitmapColor color) =>
-        (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) > 128;
+    private static bool IsColorBright(BitmapColor color) => 0.299 * color.R + 0.587 * color.G + 0.114 * color.B > 128;
 }
