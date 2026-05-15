@@ -1,7 +1,5 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
-using global::Xr18OscPlugin.Domain;
-
 /// <summary>
 /// Represents a single channel on the mixer. 
 /// For XR18 these are channels 1-18 and the 4 fx return channels.

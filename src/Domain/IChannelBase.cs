@@ -1,7 +1,5 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
-using global::Xr18OscPlugin.Domain;
-
 /// <summary>
 /// Some features are common for different types of objects on the mixer (e.g. input channels and fx return channels both have main fader levels).
 /// </summary>

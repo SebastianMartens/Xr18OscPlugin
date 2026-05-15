@@ -1,6 +1,5 @@
-namespace Xr18OscPlugin.Domain;
+namespace Loupedeck.Xr18OscPlugin.Domain;
 
-using Loupedeck.Xr18OscPlugin.Domain;
 using SharpOSC;
 
 /// <summary>
