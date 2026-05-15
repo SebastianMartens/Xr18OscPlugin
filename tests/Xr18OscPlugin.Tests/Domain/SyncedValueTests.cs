@@ -3,7 +3,6 @@ namespace Loupedeck.Xr18OscPlugin.Tests.Domain;
 using Loupedeck.Xr18OscPlugin.Domain;
 using Moq;
 using SharpOSC;
-using global::Xr18OscPlugin.Domain;
 
 public class SyncedValueTests
 {
