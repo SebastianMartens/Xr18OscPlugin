@@ -22,6 +22,7 @@ public class Xr18OscPlugin : Plugin
         PluginLog.Init(Log);
         PluginResources.Init(Assembly);
         
+        Mixer.Initialize().Wait();
         Mixer.IsConnectedChanged += (sender, isConnected) => UpdateStatus();
     }
 

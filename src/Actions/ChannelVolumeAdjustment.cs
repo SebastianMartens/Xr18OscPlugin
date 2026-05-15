@@ -54,9 +54,9 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
         {
             lrParam.ResetDisplayName = $"Mute Main LR";
         }
-        mainLrBus.Name.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
-        mainLrBus.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
-        mainLrBus.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus?.Name.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus?.IsOn.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
+        mainLrBus?.MainFaderLevel.ValueChanged += (s, e) => AdjustmentValueChanged("lr");
     }
 
     protected override void ApplyAdjustment(string actionParameter, int diff)
@@ -123,7 +123,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
     protected override string GetAdjustmentValue(string actionParameter)
     {
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.IsOn.Value ? LevelConversions.FormatLevel(Xr18OscPlugin.Mixer.MainLrBus.MainFaderLevel.Value) : "MUTE";
+            return Xr18OscPlugin.Mixer.MainLrBus?.IsOn.Value ?? false ? LevelConversions.FormatLevel(Xr18OscPlugin.Mixer.MainLrBus?.MainFaderLevel.Value ?? 0) : "MUTE";
 
         if (actionParameter.StartsWith("Fx"))
         {
@@ -151,7 +151,7 @@ public class ChannelVolumeAdjustment : PluginDynamicAdjustment
             return channel.Name.Value ?? string.Empty;
 
         if (actionParameter == "lr")
-            return Xr18OscPlugin.Mixer.MainLrBus.Name.Value ?? string.Empty;       
+            return Xr18OscPlugin.Mixer.MainLrBus?.Name.Value ?? string.Empty;       
 
         return actionParameter;
     }

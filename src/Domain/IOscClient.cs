@@ -10,7 +10,7 @@ using SharpOSC;
 /// </summary>
 public interface IOscClient
 {
-    void RegisterHandler(string address, EventHandler<OscMessage> messageHandler);
+    Task RegisterHandler(string address, EventHandler<OscMessage> messageHandler);
 
     void Send(string address, object? value = null);
 

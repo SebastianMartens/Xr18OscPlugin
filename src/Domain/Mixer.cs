@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Loupedeck.Xr18OscPlugin;
+
 using SharpOSC;
 
 /// <summary>
@@ -25,7 +26,7 @@ public class Mixer: IOscClient
 
     public string FirmwareVersion { get; private set; } = "Unknown Version";
 
-    public MainLrBus MainLrBus { get; }
+    public MainLrBus? MainLrBus { get; private set; }
 
     /// <summary>
     /// Channels represent channel strips (level, compressor, pan, eq etc.) for input channels strips.
@@ -54,12 +55,12 @@ public class Mixer: IOscClient
     /// </summary>
     public const int BusCount = 6;
 
-    public Mixer()
+    internal async Task Initialize() 
     {
-        PluginLog.Info("Initializing Mixer domain object...");
-        InitConnection().Wait();
+        PluginLog.Info("Initializing Mixer domain object...");        
+        await InitConnection().ConfigureAwait(false);
 
-        MainLrBus = new MainLrBus(this);        
+        MainLrBus = new MainLrBus(this);
                 
         // CR18: Create regular channels 1-16
         // Channels 17/18 are Line Inputs and usually used for USB return but can be 
@@ -82,6 +83,8 @@ public class Mixer: IOscClient
             FxChannels.Add(new FxChannel(this, fxIndex));
         }        
     }
+
+
 
     #region connection Plugin <=> Mixer
 
@@ -204,7 +207,7 @@ public class Mixer: IOscClient
         catch (OperationCanceledException)
         {
             PluginLog.Info("Mixer discovery timed out.");
-            IsConnectedChanged?.Invoke(this, true); // we only fire on failure. Success events will be triggered by the keep-alive ping.
+            IsConnectedChanged?.Invoke(this, false); // we only fire on failure. Success events will be triggered by the keep-alive ping.
             return false;
         }
         catch (Exception e)
@@ -246,23 +249,17 @@ public class Mixer: IOscClient
 
     private readonly ConcurrentDictionary<string, EventHandler<OscMessage>> _messageHandlers = new();
 
-    public void RegisterHandler(string address, EventHandler<OscMessage> messageHandler)
+    public async Task RegisterHandler(string address, EventHandler<OscMessage> messageHandler)
     {
          _messageHandlers.AddOrUpdate(address, messageHandler, (key, existing) => existing + messageHandler);
         
         // send empty message to trigger mixer to send us the current value for this address.        
         if (IsConnected)
         {
-            Task.Delay(10).Wait(); // wait a bit. The message handler sometimes is not executed otherwise.
+            await Task.Delay(10).ConfigureAwait(false); // wait a bit. The message handler sometimes is not executed otherwise.
             Send(address);
         }
     }
-
-    public void RemoveHandler(string address, EventHandler<OscMessage> messageHandler) =>
-        // Annoyingly, this doesn't actually remove it from the dictionary, even if we end up with a null
-        // value.
-        _messageHandlers.AddOrUpdate(address, messageHandler, (key, existing) => existing - messageHandler ?? existing);
-
 
     private void HandlePacketReceived(IOscPacket packet)
     {        
