@@ -1,7 +1,5 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
-using global::Xr18OscPlugin.Domain;
-
 /// <summary>
 /// Represents a single auxiliary bus (XR18: monitor bus 1..6) on the mixer.
 /// </summary>

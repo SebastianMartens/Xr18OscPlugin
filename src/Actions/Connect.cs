@@ -22,7 +22,7 @@ internal class ConnectCommand: ActionEditorCommand
 
     protected override bool RunCommand(ActionEditorActionParameters actionParameters)
     {        
-        if (!actionParameters.TryGetString("sender_ip", out var sender_ip))
+        if (actionParameters.TryGetString("sender_ip", out var sender_ip))
         {
             Xr18OscPlugin.Mixer.OscRemoteIpAddress = sender_ip;
         }

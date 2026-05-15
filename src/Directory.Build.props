@@ -3,5 +3,6 @@
         <LangVersion>latest</LangVersion>
         <BaseIntermediateOutputPath>$(SolutionDir)obj\</BaseIntermediateOutputPath>
         <BaseOutputPath>$(SolutionDir)..\bin\</BaseOutputPath>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 </Project>

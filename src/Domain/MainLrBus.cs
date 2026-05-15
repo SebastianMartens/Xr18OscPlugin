@@ -1,7 +1,5 @@
 namespace Loupedeck.Xr18OscPlugin.Domain;
 
-using global::Xr18OscPlugin.Domain;
-
 /// <summary>
 /// Represents the Main LR channel on the mixer.
 /// </summary>
